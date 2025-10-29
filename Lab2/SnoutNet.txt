@@ -1,0 +1,6 @@
+python train.py --model_type snoutnet --epochs 50 --batch_size 32 --learning_rate 0.001 --output_dir .\SnoutNet\snoutnet_training_noaug --cuda
+python train.py --model_type snoutnet --epochs 50 --batch_size 32 --learning_rate 0.001 --output_dir .\SnoutNet\snoutnet_training_aug --augment --cuda
+python test.py --model_path .\SnoutNet\snoutnet_training_aug\best_snoutnet_aug.pth --output_dir .\SnoutNet\snoutnet_training_aug\test_results --cuda
+python visualize.py --model_path .\SnoutNet\snoutnet_training_aug\best_snoutnet_aug.pth --output_dir .\SnoutNet\snoutnet_training_aug\visualizations --select combined --cuda
+
+
