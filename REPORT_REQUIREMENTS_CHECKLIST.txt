@@ -1,0 +1,332 @@
+================================================================================
+REPORT REQUIREMENTS CHECKLIST - ALL INFORMATION SAVED TO FILES
+================================================================================
+Based on ELEC475_Lab3_Text.txt Section 3.3 (Report Requirements)
+
+This checklist maps each report requirement to the file(s) where the 
+information is automatically saved.
+
+================================================================================
+REQUIREMENT 1: Network Architecture Description
+================================================================================
+
+What's needed:
+- Detailed structure description (sufficient for reimplementation)
+- Proper citations to techniques used
+
+Where it's saved:
+✓ model_ultracompact.py - Full architecture with comments
+✓ model_standard.py - Full architecture with comments
+✓ Both files include docstrings with architecture details
+✓ Parameter counts printed when running models_comparison.py
+
+Citations needed (manually add to report):
+- He et al. (ResNet)
+- Howard et al. (MobileNetV3)
+- Chen et al. (DeepLabV3/ASPP)
+- Hinton et al. (Knowledge Distillation)
+- Romero et al. (FitNets/Feature-based KD)
+
+STATUS: ✓ Architecture code complete, manual citations needed in report
+
+================================================================================
+REQUIREMENT 2: Knowledge Distillation Implementation
+================================================================================
+
+What's needed:
+- Step-by-step description of how KD works
+- Pseudo code or mathematical formulas
+- Both response-based and feature-based methods
+
+Where it's saved:
+✓ train.py lines ~107-129: response_based_kd_loss() with formulas in comments
+✓ train.py lines ~132-177: feature_based_kd_loss() with formulas in comments
+✓ Mathematical formulas in docstrings
+✓ Implementation details in code comments
+
+What to include in report:
+- Response-based: L = α·CE(student, GT) + β·KL(teacher, student)·T²
+- Feature-based: L = α·CE(student, GT) + β·Σ(1 - cos(student_feat, teacher_feat))
+- Temperature scaling explanation
+- Teacher model freezing
+
+STATUS: ✓ Complete, copy formulas and explanations from train.py
+
+================================================================================
+REQUIREMENT 3: Hyperparameters, Training Time, Loss Plots
+================================================================================
+
+What's needed:
+- All hyperparameters used
+- Total training time
+- Loss plots
+
+Where it's AUTOMATICALLY saved:
+✓ training_report_{model}_{kd_mode}.txt contains:
+  - All hyperparameters (lr, batch_size, epochs, temperature, alpha, beta, etc.)
+  - Total training time (hours and seconds)
+  - Average epoch time
+  - Time per image during training
+  - Best and final validation mIoU
+  - Final losses (train, val, CE, KD)
+  
+✓ training_curves_{model}_{kd_mode}.png contains:
+  - Training loss over epochs
+  - Validation loss over epochs (NEW - both on same plot!)
+  - Validation mIoU over epochs
+
+Files generated per model (6 total):
+- training_report_ultracompact_none.txt
+- training_report_ultracompact_response.txt
+- training_report_ultracompact_feature.txt
+- training_report_standard_none.txt
+- training_report_standard_response.txt
+- training_report_standard_feature.txt
+
+- training_curves_ultracompact_none.png
+- training_curves_ultracompact_response.png
+- training_curves_ultracompact_feature.png
+- training_curves_standard_none.png
+- training_curves_standard_response.png
+- training_curves_standard_feature.png
+
+STATUS: ✓ FULLY AUTOMATED - just copy plots and info from generated files
+
+================================================================================
+REQUIREMENT 4: Experimental Description (The Big One!)
+================================================================================
+
+Sub-requirement 4a: Hardware Description
+-----------------------------------------
+What's needed:
+- Description of hardware used
+- CPU/GPU specifications
+
+Where it's AUTOMATICALLY saved:
+✓ training_report_{model}_{kd_mode}.txt contains:
+  - Device (CPU/GPU)
+  - GPU name (if available)
+  - CUDA version (if available)
+  - PyTorch version
+  - Python version
+  - Operating system
+
+✓ results_{model}_{kd_mode}.txt contains:
+  - Same hardware information
+  - Device used for inference
+
+STATUS: ✓ FULLY AUTOMATED
+
+Sub-requirement 4b: Training Time Performance
+----------------------------------------------
+What's needed:
+- Time performance for training (e.g., msec per image)
+
+Where it's AUTOMATICALLY saved:
+✓ training_report_{model}_{kd_mode}.txt contains:
+  - Total training time (hours and seconds)
+  - Average epoch time
+  - Time per image (ms) - NEW!
+
+STATUS: ✓ FULLY AUTOMATED
+
+Sub-requirement 4c: Testing Time Performance
+---------------------------------------------
+What's needed:
+- Time performance for testing (e.g., msec per image)
+- Inference speed
+
+Where it's AUTOMATICALLY saved:
+✓ results_{model}_{kd_mode}.txt contains:
+  - Inference time (ms per image)
+  - Inference speed (FPS)
+
+STATUS: ✓ FULLY AUTOMATED
+
+Sub-requirement 4d: mIoU Statistics
+------------------------------------
+What's needed:
+- mIoU as accuracy measure
+- Detailed statistics
+
+Where it's AUTOMATICALLY saved:
+✓ results_{model}_{kd_mode}.txt contains:
+  - Mean IoU across all classes
+  - Per-class IoU for all 21 VOC classes
+  - Final score calculation
+
+STATUS: ✓ FULLY AUTOMATED
+
+Sub-requirement 4e: Comparison Table
+-------------------------------------
+What's needed:
+Table showing:
+- Knowledge distillation method (Without, Response-based, Feature-based)
+- mIoU
+- # Parameters
+- Inference Speed
+
+Where it's saved:
+✓ results_{model}_{kd_mode}.txt (6 files) contains all data
+✓ results_{model}_{kd_mode}.pkl (6 files) contains structured data
+✓ Run generate_comparison_table.py to create:
+  - comparison_table.txt (formatted table)
+  - comparison_table.tex (LaTeX format)
+  - Detailed analysis with KD impact percentages
+
+Data for table comes from:
+- ultracompact_none: baseline
+- ultracompact_response: response-based KD
+- ultracompact_feature: feature-based KD
+- standard_none: baseline
+- standard_response: response-based KD
+- standard_feature: feature-based KD
+
+STATUS: ✓ SEMI-AUTOMATED - run generate_comparison_table.py after testing
+
+Sub-requirement 4f: Qualitative Results
+----------------------------------------
+What's needed:
+- Images of segmentation masks overlayed
+- Both successful results AND failure cases
+
+Where it's AUTOMATICALLY saved:
+✓ visualizations_{model}_{kd_mode}/ folder contains:
+  - visualization_*.png files (10 samples per model)
+  - Each shows: Original | Ground Truth | Prediction with mIoU
+  - High resolution (150 dpi)
+  
+✓ visualizations_{model}_{kd_mode}/visualization_summary.txt contains:
+  - List of all visualizations sorted by mIoU (best to worst)
+  - Categorization into "Good" (mIoU > 0.5) and "Poor" examples
+  - Specific recommendations for which images to include in report
+  - Top 3 best examples (successful results)
+  - Bottom 3 worst examples (failure cases)
+  
+✓ visualizations_{model}_{kd_mode}/class_legend.png contains:
+  - Color legend for all 21 VOC classes
+  - Include this in report for reference
+
+Generated when running:
+  python test.py --model {model} --checkpoint {path} --visualize --num_vis 10
+
+STATUS: ✓ FULLY AUTOMATED - includes automatic good/bad categorization!
+
+================================================================================
+REQUIREMENT 5: Performance Discussion
+================================================================================
+
+What's needed:
+- Was performance as expected?
+- Which KD methods were beneficial?
+- Challenges and how you overcame them
+
+Where supporting data is saved:
+✓ comparison_table.txt shows KD impact with percentage improvements
+✓ All results files for quantitative discussion
+✓ visualization_summary.txt for qualitative discussion
+
+Manual work needed:
+- Write discussion based on the data
+- Compare results to expectations
+- Explain challenges (dataset structure, Colab setup, etc.)
+- Reference the data from saved files
+
+STATUS: ⚠ MANUAL - but all supporting data is automatically saved
+
+================================================================================
+REQUIREMENT 6: LLM Discussion
+================================================================================
+
+What's needed:
+- How you used the LLM
+- How you verified code wasn't hallucinated
+- Link to conversation
+
+Manual work needed:
+- Write discussion of LLM usage
+- Include this conversation link
+- Describe verification methods (testing, documentation checks, etc.)
+
+STATUS: ⚠ MANUAL - no automatic logging
+
+================================================================================
+SUMMARY: WHAT'S AUTOMATICALLY SAVED TO FILES
+================================================================================
+
+Training (per model - 6 total):
+✓ training_report_{model}_{kd_mode}.txt
+  - Hardware info (CPU/GPU, versions, OS)
+  - All hyperparameters
+  - Total training time
+  - Time per image (ms)
+  - Best/final mIoU and losses
+  
+✓ training_curves_{model}_{kd_mode}.png
+  - Train loss + Val loss (both on same plot)
+  - Validation mIoU progression
+
+Testing (per model - 6 total):
+✓ results_{model}_{kd_mode}.txt
+  - Hardware info
+  - Model parameters
+  - mIoU (mean and per-class)
+  - Inference time (ms per image)
+  - Inference speed (FPS)
+  - Final score with formula
+  
+✓ results_{model}_{kd_mode}.pkl
+  - Same data in structured format for comparison script
+
+Visualizations (per model - 6 total):
+✓ visualizations_{model}_{kd_mode}/
+  - visualization_*.png (10 images per model)
+  - visualization_summary.txt with good/bad categorization
+  - class_legend.png
+
+Comparison (after all testing):
+✓ comparison_table.txt
+✓ comparison_table.tex
+✓ Detailed analysis with KD improvements
+
+================================================================================
+FINAL CHECKLIST FOR REPORT
+================================================================================
+
+Information AUTOMATICALLY in files (just copy to report):
+[✓] Network architecture (from model .py files)
+[✓] KD implementation (from train.py with formulas)
+[✓] All hyperparameters (from training_report_*.txt)
+[✓] Training time (from training_report_*.txt)
+[✓] Time per image training (from training_report_*.txt)
+[✓] Loss plots (from training_curves_*.png)
+[✓] Hardware description (from training_report_*.txt and results_*.txt)
+[✓] Testing time per image (from results_*.txt)
+[✓] Inference speed/FPS (from results_*.txt)
+[✓] mIoU statistics (from results_*.txt)
+[✓] Per-class IoU (from results_*.txt)
+[✓] Comparison table data (from comparison_table.txt/tex)
+[✓] Successful segmentation examples (from visualizations_*/visualization_summary.txt)
+[✓] Failure cases (from visualizations_*/visualization_summary.txt)
+[✓] Segmentation mask overlays (from visualizations_*/*.png)
+
+Information requiring MANUAL writing:
+[⚠] Architecture description text (use code as reference)
+[⚠] Citations (He, Howard, Chen, Hinton, Romero, Everingham)
+[⚠] KD explanation text (use code formulas as reference)
+[⚠] Performance discussion (use saved data as evidence)
+[⚠] Challenges and solutions (dataset issues, Colab setup, etc.)
+[⚠] LLM usage discussion
+[⚠] LLM conversation link
+
+================================================================================
+YOU'RE ALL SET!
+================================================================================
+
+Every single piece of data required by the lab instructions is now being
+automatically saved to files during training and testing!
+
+Just run your experiments, and all the information will be waiting for you
+in the generated files. No need to copy from terminal output!
+
+================================================================================

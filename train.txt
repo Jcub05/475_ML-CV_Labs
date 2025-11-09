@@ -1,0 +1,62 @@
+# ELEC 475 Lab 3 - Training Commands
+# All commands should be run from the Lab 3 directory
+
+# ============================================================================
+# ULTRA-COMPACT MODEL (475K parameters)
+# ============================================================================
+
+# Baseline (No Knowledge Distillation)
+python train.py --model ultracompact --kd_mode none --epochs 50 --batch_size 8 --lr 0.001
+
+# Response-based Knowledge Distillation
+python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --lr 0.001 --temperature 3.0 --alpha 0.5 --beta 0.5
+
+# Feature-based Knowledge Distillation
+python train.py --model ultracompact --kd_mode feature --epochs 50 --batch_size 8 --lr 0.001 --alpha 0.5 --beta 0.5
+
+# ============================================================================
+# STANDARD MODEL (1.75M parameters)
+# ============================================================================
+
+# Baseline (No Knowledge Distillation)
+python train.py --model standard --kd_mode none --epochs 50 --batch_size 8 --lr 0.001
+
+# Response-based Knowledge Distillation
+python train.py --model standard --kd_mode response --epochs 50 --batch_size 8 --lr 0.001 --temperature 3.0 --alpha 0.5 --beta 0.5
+
+# Feature-based Knowledge Distillation
+python train.py --model standard --kd_mode feature --epochs 50 --batch_size 8 --lr 0.001 --alpha 0.5 --beta 0.5
+
+# ============================================================================
+# TRAINING OUTPUT FILES
+# ============================================================================
+# For each training run, the following files will be generated in ./checkpoints/:
+#   - best_model_{model}_{kd_mode}.pth           (best model weights)
+#   - training_curves_{model}_{kd_mode}.png      (loss and mIoU plots)
+#   - training_report_{model}_{kd_mode}.txt      (hyperparameters and timing)
+#   - checkpoint_{model}_{kd_mode}_epoch*.pth    (periodic checkpoints)
+
+# ============================================================================
+# OPTIONAL: HYPERPARAMETER TUNING
+# ============================================================================
+# If you want to experiment with different hyperparameters:
+
+# Adjust learning rate
+# python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --lr 0.0005
+
+# Adjust KD temperature (higher = softer targets)
+# python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --temperature 5.0
+
+# Adjust loss weights (higher alpha = more focus on ground truth, higher beta = more focus on teacher)
+# python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --alpha 0.7 --beta 0.3
+
+# Adjust batch size (if memory issues)
+# python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 4
+
+# ============================================================================
+# NOTES
+# ============================================================================
+# - Training on CPU will be slow. Consider using Google Colab with GPU.
+# - Expected training time: 2-4 hours per model on GPU, 10-20 hours on CPU
+# - Monitor validation mIoU - training should converge after 30-40 epochs
+# - Best model is saved automatically when validation mIoU improves
