@@ -30,6 +30,7 @@ from tqdm import tqdm
 
 # Import custom models
 from model_ultracompact import UltraCompactSegmentationModel
+from model_ultracompact_v2 import UltraCompactSegmentationModelV2
 from model_standard import StandardSegmentationModel
 
 
@@ -394,10 +395,12 @@ def main(args):
     print("\nLoading student model...")
     if args.model == 'ultracompact':
         model = UltraCompactSegmentationModel(num_classes=21, pretrained=True)
+    elif args.model == 'ultracompact_v2':
+        model = UltraCompactSegmentationModelV2(num_classes=21, pretrained=True)
     elif args.model == 'standard':
         model = StandardSegmentationModel(num_classes=21, pretrained=True)
     else:
-        raise ValueError(f"Unknown model: {args.model}")
+        raise ValueError(f"Unknown model: {args.model}. Choose 'ultracompact', 'ultracompact_v2', or 'standard'.")
     
     model = model.to(device)
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -719,7 +722,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train compact segmentation model')
     
     # Model arguments
-    parser.add_argument('--model', type=str, default='ultracompact', choices=['ultracompact', 'standard'],
+    parser.add_argument('--model', type=str, default='ultracompact', choices=['ultracompact', 'ultracompact_v2', 'standard'],
                         help='Model type to train')
     parser.add_argument('--kd_mode', type=str, default='none', choices=['none', 'response', 'feature'],
                         help='Knowledge distillation mode')

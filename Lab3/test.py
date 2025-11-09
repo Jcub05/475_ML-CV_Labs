@@ -23,6 +23,7 @@ from tqdm import tqdm
 
 # Import custom models
 from model_ultracompact import UltraCompactSegmentationModel
+from model_ultracompact_v2 import UltraCompactSegmentationModelV2
 from model_standard import StandardSegmentationModel
 
 
@@ -454,10 +455,12 @@ def main(args):
     print("\nLoading model...")
     if args.model == 'ultracompact':
         model = UltraCompactSegmentationModel(num_classes=21, pretrained=False)
+    elif args.model == 'ultracompact_v2':
+        model = UltraCompactSegmentationModelV2(num_classes=21, pretrained=False)
     elif args.model == 'standard':
         model = StandardSegmentationModel(num_classes=21, pretrained=False)
     else:
-        raise ValueError(f"Unknown model: {args.model}")
+        raise ValueError(f"Unknown model: {args.model}. Choose 'ultracompact', 'ultracompact_v2', or 'standard'.")
     
     # Load checkpoint
     checkpoint = torch.load(args.checkpoint, map_location=device)
@@ -616,7 +619,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test compact segmentation model')
     
     # Model arguments
-    parser.add_argument('--model', type=str, required=True, choices=['ultracompact', 'standard'],
+    parser.add_argument('--model', type=str, required=True, choices=['ultracompact', 'ultracompact_v2', 'standard'],
                         help='Model type to test')
     parser.add_argument('--checkpoint', type=str, required=True,
                         help='Path to model checkpoint')
