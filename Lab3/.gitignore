@@ -9,14 +9,14 @@ data/
 VOC2012/
 VOC2012_train_val/
 
-# Model checkpoints (too large, will be generated)
-checkpoints/
-*.pth
-*.pt
+# Model checkpoints - allow small ones for submission
+# checkpoints/
+# *.pth  (commented out - we need these for submission!)
+# *.pt
 
-# Results and outputs (will be generated)
-results/
-visualizations/
+# Results and outputs - allow for report
+# results/  (commented out - we need these for report!)
+# visualizations/  (we may need some for report)
 
 # System files
 .DS_Store
