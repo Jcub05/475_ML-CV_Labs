@@ -1,0 +1,34 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data folders (too large for git - NEVER commit these!)
+data/
+VOC2012/
+VOC2012_train_val/
+
+# Model checkpoints (too large, will be generated)
+checkpoints/
+*.pth
+*.pt
+
+# Results and outputs (will be generated)
+results/
+visualizations/
+visualization_*/
+
+# System files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Previous lab reference
+Previous Lab (for reference)/
