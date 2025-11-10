@@ -294,7 +294,7 @@ def train_epoch(model, teacher_model, dataloader, optimizer, device, kd_mode='no
     return avg_loss, avg_ce_loss, avg_kd_loss
 
 
-def validate(model, dataloader, device, num_classes=21):
+def validate(model, dataloader, device, num_classes=21, teacher_model=None, kd_mode='none', temperature=3.0, alpha=0.5, beta=0.5):
     """
     Validate the model
     
@@ -303,12 +303,20 @@ def validate(model, dataloader, device, num_classes=21):
         dataloader: validation data loader
         device: device to run on
         num_classes: number of classes
+        teacher_model: teacher model for KD validation (optional)
+        kd_mode: 'none', 'response', or 'feature'
+        temperature: temperature for KD
+        alpha: weight for CE loss
+        beta: weight for KD loss
     
     Returns:
         mean_iou: mean IoU across all samples
-        mean_loss: mean cross-entropy loss
+        mean_loss: mean loss (CE only for 'none', combined for KD modes)
     """
     model.eval()
+    if teacher_model is not None:
+        teacher_model.eval()
+    
     all_ious = []
     all_losses = []
     criterion = nn.CrossEntropyLoss(ignore_index=255)
@@ -329,10 +337,19 @@ def validate(model, dataloader, device, num_classes=21):
                 # Forward pass
                 output = model(img)
                 
-                # Calculate loss at FULL RESOLUTION (same as training)
-                # Upsample output to match target size for loss calculation
-                output_upsampled = F.interpolate(output, size=(256, 256), mode='bilinear', align_corners=False)
-                loss = criterion(output_upsampled, target_256.unsqueeze(0))
+                # Calculate loss based on KD mode (same as training!)
+                if kd_mode == 'none':
+                    # Just CE loss
+                    output_upsampled = F.interpolate(output, size=(256, 256), mode='bilinear', align_corners=False)
+                    loss = criterion(output_upsampled, target_256.unsqueeze(0))
+                else:
+                    # Combined CE + KD loss (same as training)
+                    teacher_output = teacher_model(img)['out']
+                    loss, _, _ = response_based_kd_loss(
+                        output, teacher_output, target_256.unsqueeze(0),
+                        temperature=temperature, alpha=alpha, beta=beta
+                    )
+                
                 all_losses.append(loss.item())
                 
                 # Resize back to original size for IoU calculation
@@ -588,8 +605,15 @@ def main(args):
         
         print(f"Train Loss: {train_loss:.4f} (CE: {train_ce_loss:.4f}, KD: {train_kd_loss:.4f})")
         
-        # Validate
-        val_miou, val_loss = validate(model, val_loader, device)
+        # Validate (use same loss calculation as training for fair comparison)
+        val_miou, val_loss = validate(
+            model, val_loader, device, 
+            teacher_model=teacher_model,
+            kd_mode=args.kd_mode,
+            temperature=args.temperature,
+            alpha=args.alpha,
+            beta=args.beta
+        )
         print(f"Validation mIoU: {val_miou:.4f}, Loss: {val_loss:.4f}")
         
         # Record epoch time
