@@ -1,17 +1,33 @@
 # ELEC 475 Lab 3 - Training Commands
-# All commands should be run from the Lab 3 directory
+# All commands should be run from the Lab3/Lab3 directory
+# Updated: November 10, 2025
 
 # ============================================================================
-# ULTRA-COMPACT MODEL (475K parameters)
+# IMPORTANT: TRAINING ENVIRONMENT
+# ============================================================================
+# Recommended: Google Colab with GPU (NVIDIA A100 or T4)
+# Training on CPU is VERY slow (10-20 hours per model)
+# Training on GPU: ~30-35 minutes per model
+
+# Dataset: PASCAL VOC 2012
+# - Training set: 1,464 images
+# - Validation set: 1,449 images
+# - 21 classes (including background)
+
+# ============================================================================
+# COMPLETED TRAINING - ULTRA-COMPACT MODEL V1 (475,077 parameters = 0.48M)
 # ============================================================================
 
-# Baseline (No Knowledge Distillation)
+# Baseline (No Knowledge Distillation) - COMPLETED
+# Training time: 0.48h (28.8 min), Best val mIoU: 0.4181 @ epoch 42
 python train.py --model ultracompact --kd_mode none --epochs 50 --batch_size 8 --lr 0.001
 
-# Response-based Knowledge Distillation
+# Response-based Knowledge Distillation - COMPLETED  
+# Training time: 0.46h (27.6 min), Best val mIoU: 0.5266 @ epoch 46
 python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --lr 0.001 --temperature 3.0 --alpha 0.5 --beta 0.5
 
-# Feature-based Knowledge Distillation
+# Feature-based Knowledge Distillation - COMPLETED
+# Training time: 0.59h (35.4 min), Best val mIoU: 0.5187 @ epoch 39
 python train.py --model ultracompact --kd_mode feature --epochs 50 --batch_size 8 --lr 0.001 --alpha 0.5 --beta 0.5
 
 # ============================================================================
@@ -30,33 +46,108 @@ python train.py --model standard --kd_mode feature --epochs 50 --batch_size 8 --
 # ============================================================================
 # TRAINING OUTPUT FILES
 # ============================================================================
-# For each training run, the following files will be generated in ./checkpoints/:
-#   - best_model_{model}_{kd_mode}.pth           (best model weights)
-#   - training_curves_{model}_{kd_mode}.png      (loss and mIoU plots)
-#   - training_report_{model}_{kd_mode}.txt      (hyperparameters and timing)
-#   - checkpoint_{model}_{kd_mode}_epoch*.pth    (periodic checkpoints)
+# For each training run, files are saved to: ./Results/{model}/{model}_{kd_mode}/
+#   - best_model_{model}_{kd_mode}.pth           Best model checkpoint (highest val mIoU)
+#   - training_curves_{model}_{kd_mode}.png      Loss and mIoU evolution plots
+#   - training_report_{model}_{kd_mode}.txt      Hyperparameters and training statistics
+#   - checkpoint_{model}_{kd_mode}_epoch*.pth    Periodic checkpoints (every 10 epochs)
+
+# Checkpoint contents:
+#   - model_state_dict: Model weights
+#   - optimizer_state_dict: Optimizer state
+#   - epoch: Current epoch
+#   - best_miou: Best validation mIoU achieved
+#   - history: Training/validation losses and mIoU per epoch
 
 # ============================================================================
-# OPTIONAL: HYPERPARAMETER TUNING
+# COMPLETED TRAINING RESULTS SUMMARY
+# ============================================================================
+# Hardware: NVIDIA A100-SXM4-40GB, CUDA 12.6, Linux, PyTorch 2.8.0+cu126
+# Hyperparameters: batch_size=8, lr=0.001, optimizer=Adam, scheduler=CosineAnnealingLR
+
+# Model: UltraCompact V1 (475,077 parameters)
+#
+# Training Performance:
+#   Config              | Time    | Best Val mIoU | Final Train Loss | Test mIoU
+#   --------------------|---------|---------------|------------------|----------
+#   Without KD          | 0.48h   | 0.4181        | 0.2446           | 0.2999
+#   Response-based KD   | 0.46h   | 0.5266        | 0.2108           | 0.3941
+#   Feature-based KD    | 0.59h   | 0.5187        | 0.2166           | 0.3897
+#
+# Observations:
+#   - Response-based KD: Best validation mIoU (0.5266), fastest training (27.6 min)
+#   - Feature-based KD: Slower convergence, longer training time (35.4 min)
+#   - Both KD methods significantly outperform baseline (~26% higher val mIoU)
+#   - Test mIoU lower than validation due to domain shift or overfitting
+#   - All models converged within 50 epochs
+
+# ============================================================================
+# KNOWLEDGE DISTILLATION HYPERPARAMETERS USED
+# ============================================================================
+# Temperature (T): 3.0
+#   - Controls softness of teacher's probability distribution
+#   - Higher T = softer targets, more information transfer
+#   - T=3.0 empirically good for segmentation tasks
+#
+# Alpha (α): 0.5
+#   - Weight for ground truth loss (cross-entropy)
+#   - α=0.5 balances learning from ground truth and teacher
+#
+# Beta (β): 0.5
+#   - Weight for knowledge distillation loss
+#   - β=0.5 gives equal importance to KD and ground truth
+#
+# Loss formula:
+#   - Response-based: L = α·CE(output, target) + β·KL(output/T, teacher/T)
+#   - Feature-based: L = α·CE(output, target) + β·MSE(features, teacher_features)
+
+# ============================================================================
+# OPTIONAL: HYPERPARAMETER TUNING (if re-training needed)
 # ============================================================================
 # If you want to experiment with different hyperparameters:
 
-# Adjust learning rate
+# Adjust learning rate (lower = more stable, slower; higher = faster, less stable)
 # python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --lr 0.0005
 
-# Adjust KD temperature (higher = softer targets)
+# Adjust KD temperature (higher = softer targets, more information transfer)
 # python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --temperature 5.0
 
-# Adjust loss weights (higher alpha = more focus on ground truth, higher beta = more focus on teacher)
+# Adjust loss weights (higher alpha = more focus on ground truth; higher beta = more focus on teacher)
 # python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --alpha 0.7 --beta 0.3
+# python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 8 --alpha 0.3 --beta 0.7
 
-# Adjust batch size (if memory issues)
+# Adjust batch size (lower if memory issues, higher for faster training)
 # python train.py --model ultracompact --kd_mode response --epochs 50 --batch_size 4
 
+# More epochs (if not converged)
+# python train.py --model ultracompact --kd_mode response --epochs 100 --batch_size 8
+
 # ============================================================================
-# NOTES
+# STANDARD MODEL (NOT TRAINED IN THIS LAB)
 # ============================================================================
-# - Training on CPU will be slow. Consider using Google Colab with GPU.
-# - Expected training time: 2-4 hours per model on GPU, 10-20 hours on CPU
-# - Monitor validation mIoU - training should converge after 30-40 epochs
-# - Best model is saved automatically when validation mIoU improves
+# The standard model (1.75M parameters) was defined but not trained due to time constraints
+# and focus on ultra-compact model. Commands provided for reference:
+
+# Baseline (No Knowledge Distillation)
+# python train.py --model standard --kd_mode none --epochs 50 --batch_size 8 --lr 0.001
+
+# Response-based Knowledge Distillation
+# python train.py --model standard --kd_mode response --epochs 50 --batch_size 8 --lr 0.001 --temperature 3.0 --alpha 0.5 --beta 0.5
+
+# Feature-based Knowledge Distillation
+# python train.py --model standard --kd_mode feature --epochs 50 --batch_size 8 --lr 0.001 --alpha 0.5 --beta 0.5
+
+# ============================================================================
+# NOTES FOR TRAINING
+# ============================================================================
+# - Use Google Colab with GPU (A100 recommended, T4 acceptable)
+# - Expected GPU training time: 30-35 minutes per model
+# - Expected CPU training time: 10-20 hours per model (NOT recommended)
+# - Monitor validation mIoU - should improve steadily for ~40 epochs
+# - Best model saved automatically when validation mIoU improves
+# - Training curves saved every epoch for monitoring progress
+# - Early stopping: if val mIoU doesn't improve for 10+ epochs, can stop
+# - Batch size 8 works well for most GPUs (reduce to 4 if out of memory)
+# - Learning rate 0.001 with cosine annealing works well empirically
+# - Temperature 3.0 is standard for knowledge distillation
+# - α=β=0.5 balances ground truth and teacher knowledge equally

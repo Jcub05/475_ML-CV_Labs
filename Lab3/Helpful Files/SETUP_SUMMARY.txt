@@ -1,0 +1,326 @@
+================================================================================
+LAB 3 - COMPLETE SETUP SUMMARY
+================================================================================
+
+Your training and testing scripts have been updated to automatically capture
+ALL information needed for your report. Here's what changed and what you have:
+
+================================================================================
+UPDATES MADE TO YOUR SCRIPTS
+================================================================================
+
+1. train.py - Enhanced with automatic data collection:
+   ✓ Added hyperparameters dictionary that saves all training settings
+   ✓ Added epoch timing (tracks how long each epoch takes)
+   ✓ Added total training time calculation
+   ✓ Generates training_report_{model}_{kd_mode}.txt with:
+     - All hyperparameters (learning rate, batch size, temperature, etc.)
+     - Total training time (hours and seconds)
+     - Average epoch time
+     - Best and final validation mIoU
+     - Final loss values (total, CE, KD)
+     - List of generated files
+   ✓ Training report is printed to console and saved to file
+
+2. test.py - Enhanced with additional metrics:
+   ✓ Added FPS (frames per second) calculation
+   ✓ Added checkpoint path to results for reference
+   ✓ All results saved in both .txt and .pkl formats
+
+3. NEW: generate_comparison_table.py
+   ✓ Aggregates results from all 6 model variants
+   ✓ Creates comparison table with all metrics
+   ✓ Calculates KD improvement percentages
+   ✓ Analyzes per-class IoU across all models
+   ✓ Identifies best/worst segmented classes
+   ✓ Exports to LaTeX format for report
+   ✓ Exports to text format for review
+
+4. NEW: REPORT_CHECKLIST.txt
+   ✓ Complete checklist of all information needed
+   ✓ Step-by-step guide for data collection
+   ✓ Report structure suggestions
+   ✓ Quick reference for automatically captured data
+
+5. NEW: train.txt and test.txt
+   ✓ All training commands for 6 model variants
+   ✓ All testing commands for 6 model variants
+   ✓ Commands to generate comparison table
+   ✓ Optional hyperparameter tuning commands
+   ✓ Notes and expected outputs
+
+================================================================================
+WHAT GETS AUTOMATICALLY CAPTURED
+================================================================================
+
+When you run train.py, it automatically saves:
+  1. All hyperparameters (lr, batch_size, temperature, alpha, beta, etc.)
+  2. Total training time in hours and seconds
+  3. Per-epoch training times
+  4. Training loss progression (total, CE, KD components)
+  5. Validation mIoU progression
+  6. Best model checkpoint with all metadata
+  7. Training curves plots (loss and mIoU over epochs)
+  8. Comprehensive training report text file
+
+When you run test.py, it automatically saves:
+  1. Mean IoU across all classes
+  2. Per-class IoU for all 21 VOC classes
+  3. Number of parameters
+  4. Inference time (milliseconds per image)
+  5. FPS (frames per second)
+  6. Final score (4 × mIoU / (1 + params_in_millions))
+  7. Visualization images (Original | GT | Prediction)
+  8. Class color legend
+  9. Detailed results in both text and pickle format
+
+When you run generate_comparison_table.py, it automatically creates:
+  1. Comparison table with all 6 model variants
+  2. KD improvement percentages for each model
+  3. Best model by mIoU, score, and inference speed
+  4. Per-class IoU analysis (best and worst classes)
+  5. LaTeX table ready for your report
+  6. Text table for review
+
+================================================================================
+WORKFLOW FOR COMPLETING THE LAB
+================================================================================
+
+Step 1: Train all models (Google Colab recommended with GPU)
+----------------------------------------
+Run these 6 commands from train.txt:
+  □ python train.py --model ultracompact --kd_mode none ...
+  □ python train.py --model ultracompact --kd_mode response ...
+  □ python train.py --model ultracompact --kd_mode feature ...
+  □ python train.py --model standard --kd_mode none ...
+  □ python train.py --model standard --kd_mode response ...
+  □ python train.py --model standard --kd_mode feature ...
+
+Expected time: 2-4 hours per model on GPU (12-24 hours total)
+              10-20 hours per model on CPU (60-120 hours total)
+
+After each training run, verify these files exist:
+  ✓ checkpoints/best_model_{model}_{kd_mode}.pth
+  ✓ checkpoints/training_curves_{model}_{kd_mode}.png
+  ✓ checkpoints/training_report_{model}_{kd_mode}.txt
+
+Step 2: Test all models
+----------------------------------------
+Run these 6 commands from test.txt:
+  □ python test.py --model ultracompact --checkpoint ... --visualize --num_vis 10
+  □ python test.py --model ultracompact --checkpoint ... --visualize --num_vis 10
+  □ python test.py --model ultracompact --checkpoint ... --visualize --num_vis 10
+  □ python test.py --model standard --checkpoint ... --visualize --num_vis 10
+  □ python test.py --model standard --checkpoint ... --visualize --num_vis 10
+  □ python test.py --model standard --checkpoint ... --visualize --num_vis 10
+
+Expected time: 5-10 minutes per model on GPU (30-60 minutes total)
+              30-60 minutes per model on CPU (3-6 hours total)
+
+After each test run, verify these files exist:
+  ✓ results/results_{model}_{kd_mode}.txt
+  ✓ results/results_{model}_{kd_mode}.pkl
+  ✓ results/visualizations_{model}_{kd_mode}/ (folder with images)
+
+Step 3: Generate comparison table
+----------------------------------------
+Run this command:
+  □ python generate_comparison_table.py --results_dir ./results --checkpoints_dir ./checkpoints --save_latex
+
+This creates:
+  ✓ results/comparison_table.txt
+  ✓ comparison_table.tex
+
+Review the console output for:
+  - Detailed comparison table
+  - KD improvement percentages
+  - Best/worst segmented classes
+  - Analysis and insights
+
+Step 4: Write your report (4-6 pages)
+----------------------------------------
+Use REPORT_CHECKLIST.txt as your guide. Include:
+
+  1. Network Architecture
+     - Describe MobileNetV3-Small + ASPP structure
+     - Include parameter counts table
+     - Add citations (He, Howard, Chen, Hinton, Romero)
+  
+  2. Knowledge Distillation Implementation
+     - Response-based KD formula and explanation
+     - Feature-based KD method and explanation
+     - Teacher model description
+  
+  3. Hyperparameters
+     - Copy from training_report_*.txt files
+     - Create hyperparameters table
+  
+  4. Training Results
+     - Total training time for each variant
+     - Include 2-3 loss plots from training_curves_*.png
+     - Discuss convergence behavior
+  
+  5. Testing Results
+     - Copy comparison_table.tex into report
+     - Discuss which model/KD method performed best
+     - Analyze KD impact (use improvement percentages)
+  
+  6. Qualitative Results
+     - Include 3-5 successful segmentation examples
+     - Include 2-3 failure cases
+     - Include class_legend.png
+     - Discuss what works well and what doesn't
+  
+  7. Performance Discussion
+     - Was performance as expected?
+     - Which KD method was more effective?
+     - How did parameter count affect results?
+     - Challenges encountered and solutions
+  
+  8. LLM Usage
+     - How you used the LLM (architecture design, debugging, etc.)
+     - How you verified outputs (testing, documentation, manual review)
+     - Examples of hallucinations caught
+     - Include conversation link
+
+Step 5: Package deliverables
+----------------------------------------
+Create <student_number>.zip containing:
+
+  Code files:
+    ✓ train.py
+    ✓ test.py
+    ✓ model_ultracompact.py
+    ✓ model_standard.py
+    ✓ models_comparison.py
+    ✓ test_pretrained_fcn.py
+    ✓ generate_comparison_table.py
+    ✓ train.txt
+    ✓ test.txt
+  
+  Training outputs:
+    ✓ best_model_ultracompact_none.pth
+    ✓ best_model_ultracompact_response.pth
+    ✓ best_model_ultracompact_feature.pth
+    ✓ best_model_standard_none.pth
+    ✓ best_model_standard_response.pth
+    ✓ best_model_standard_feature.pth
+    ✓ All training_curves_*.png (6 files)
+    ✓ All training_report_*.txt (6 files)
+  
+  Testing outputs:
+    ✓ All results_*.txt (6 files)
+    ✓ Selected visualization images (not all, pick 10-15 best/worst)
+    ✓ class_legend.png
+  
+  Comparison:
+    ✓ comparison_table.txt or comparison_table.tex
+  
+  Report:
+    ✓ report.pdf (4-6 pages)
+  
+  README:
+    ✓ README.txt with:
+      - Your name and student number
+      - Brief description of contents
+      - LLM conversation link
+      - Any special instructions
+
+================================================================================
+KEY INFORMATION FOR YOUR REPORT
+================================================================================
+
+Model Specifications:
+  - Ultra-Compact: 475,077 parameters (0.48M)
+  - Standard: 3,409,285 parameters (3.41M)
+  - Teacher (FCN-ResNet50): 35.3M parameters
+
+Score Formula:
+  Score = 4 × mIoU / (1 + parameters_in_millions)
+  
+  This heavily favors smaller models. Ultra-Compact is expected to achieve
+  the highest score despite potentially lower mIoU.
+
+Knowledge Distillation:
+  - Response-based: Temperature-scaled KL divergence (τ=3.0)
+    Loss = α·CE(student, GT) + β·KL(teacher, student)·τ²
+  
+  - Feature-based: Cosine similarity on intermediate features
+    Loss = α·CE(student, GT) + β·Σ(1 - cos(student_feat, teacher_feat))
+
+Default Hyperparameters:
+  - Epochs: 50
+  - Batch size: 8
+  - Learning rate: 0.001
+  - Weight decay: 1e-4
+  - Temperature (τ): 3.0
+  - Alpha (α): 0.5
+  - Beta (β): 0.5
+  - Optimizer: Adam
+  - Scheduler: CosineAnnealingLR
+
+PASCAL VOC 2012 Dataset:
+  - 21 classes (background + 20 object classes)
+  - Training set: ~1,464 images
+  - Validation set: ~1,449 images
+  - Evaluation metric: mean IoU (Intersection over Union)
+
+================================================================================
+CITATIONS TO INCLUDE IN REPORT
+================================================================================
+
+1. He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep Residual Learning for 
+   Image Recognition. CVPR 2016.
+
+2. Howard, A., et al. (2019). Searching for MobileNetV3. ICCV 2019.
+
+3. Chen, L. C., et al. (2017). Rethinking Atrous Convolution for Semantic 
+   Image Segmentation. arXiv:1706.05587.
+
+4. Hinton, G., Vinyals, O., & Dean, J. (2015). Distilling the Knowledge in 
+   a Neural Network. arXiv:1503.02531.
+
+5. Romero, A., et al. (2014). FitNets: Hints for Thin Deep Nets. ICLR 2015.
+
+6. Everingham, M., et al. (2010). The PASCAL Visual Object Classes (VOC) 
+   Challenge. IJCV 2010.
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If training fails:
+  - Check GPU memory (reduce batch_size if needed)
+  - Verify dataset paths (check dataset_path.txt)
+  - Ensure checkpoint directory exists
+
+If testing fails:
+  - Verify checkpoint file exists and path is correct
+  - Check if model type matches checkpoint
+  - Ensure results directory is writable
+
+If comparison table generation fails:
+  - Verify all 6 results pickle files exist
+  - Check that checkpoint files contain history data
+  - Install tabulate if needed: pip install tabulate
+
+================================================================================
+QUESTIONS? CHECK THESE FILES:
+================================================================================
+
+- REPORT_CHECKLIST.txt - Detailed checklist of all report requirements
+- train.txt - All training commands and options
+- test.txt - All testing commands and options
+- training_report_*.txt - Individual training reports with all hyperparameters
+- results_*.txt - Individual test results with per-class IoU
+- comparison_table.txt - Aggregated results across all models
+
+================================================================================
+YOU'RE READY TO GO!
+================================================================================
+
+Everything is set up to automatically capture all the information you need.
+Just run the training and testing commands, and your scripts will save
+everything required for your report.
+
+Good luck with your training and report!

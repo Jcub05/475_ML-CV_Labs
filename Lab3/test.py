@@ -197,7 +197,7 @@ def evaluate_model(model, dataloader, device, num_classes=21):
     return mean_iou, class_avg_ious, avg_inference_time
 
 
-def visualize_predictions(model, dataset, device, num_samples=5, save_dir='./visualizations'):
+def visualize_predictions(model, dataset, device, num_samples=5, save_dir='./visualizations', select_best_worst=True):
     """
     Generate visualization comparing ground truth and predictions
     
@@ -205,15 +205,48 @@ def visualize_predictions(model, dataset, device, num_samples=5, save_dir='./vis
         model: trained model
         dataset: VOC dataset
         device: device to run on
-        num_samples: number of samples to visualize
+        num_samples: number of samples to visualize (split between best and worst)
         save_dir: directory to save visualizations
+        select_best_worst: if True, select best and worst predictions; if False, select random
     """
     model.eval()
     save_dir = Path(save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
     
-    # Select random samples
-    indices = np.random.choice(len(dataset), size=min(num_samples, len(dataset)), replace=False)
+    # If select_best_worst, evaluate all samples first to find best/worst
+    if select_best_worst:
+        print("Evaluating all samples to find best and worst predictions...")
+        all_ious = []
+        
+        with torch.no_grad():
+            for idx in tqdm(range(len(dataset)), desc='Computing IoUs'):
+                img, target = dataset[idx]
+                img_tensor = img.unsqueeze(0).to(device)
+                h, w = target.shape
+                
+                output = model(img_tensor)
+                output = F.interpolate(output, size=(h, w), mode='bilinear', align_corners=False)
+                pred = output.squeeze(0).argmax(0).cpu()
+                
+                miou, _ = calculate_miou(pred, target)
+                all_ious.append((idx, miou))
+        
+        # Sort by IoU
+        all_ious.sort(key=lambda x: x[1], reverse=True)
+        
+        # Select top and bottom samples
+        num_best = num_samples // 2
+        num_worst = num_samples - num_best
+        
+        best_indices = [idx for idx, _ in all_ious[:num_best]]
+        worst_indices = [idx for idx, _ in all_ious[-num_worst:]]
+        indices = best_indices + worst_indices
+        
+        print(f"Selected {num_best} best predictions (IoU: {all_ious[0][1]:.4f} - {all_ious[num_best-1][1]:.4f})")
+        print(f"Selected {num_worst} worst predictions (IoU: {all_ious[-1][1]:.4f} - {all_ious[-num_worst][1]:.4f})")
+    else:
+        # Select random samples
+        indices = np.random.choice(len(dataset), size=min(num_samples, len(dataset)), replace=False)
     
     # Track results for summary
     visualization_results = []
@@ -223,10 +256,9 @@ def visualize_predictions(model, dataset, device, num_samples=5, save_dir='./vis
             img, target = dataset[idx]
             
             # Get original image (before normalization)
-            original_img = np.array(dataset.dataset.images[idx])
-            if isinstance(original_img, str):
-                from PIL import Image
-                original_img = np.array(Image.open(original_img).convert('RGB'))
+            from PIL import Image
+            img_path = dataset.images[idx]
+            original_img = np.array(Image.open(img_path).convert('RGB'))
             
             # Forward pass
             img_tensor = img.unsqueeze(0).to(device)
@@ -463,7 +495,7 @@ def main(args):
         raise ValueError(f"Unknown model: {args.model}. Choose 'ultracompact', 'ultracompact_v2', or 'standard'.")
     
     # Load checkpoint
-    checkpoint = torch.load(args.checkpoint, map_location=device)
+    checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['model_state_dict'])
     model = model.to(device)
     model.eval()
@@ -600,7 +632,8 @@ def main(args):
     if args.visualize:
         print("\nGenerating visualizations...")
         vis_dir = Path(args.save_dir) / f'visualizations_{args.model}_{kd_mode}'
-        visualize_predictions(model, val_dataset, device, num_samples=args.num_vis, save_dir=vis_dir)
+        visualize_predictions(model, val_dataset, device, num_samples=args.num_vis, 
+                            save_dir=vis_dir, select_best_worst=args.best_worst)
         create_legend(vis_dir)
     
     # Save results as pickle
@@ -629,6 +662,8 @@ if __name__ == '__main__':
                         help='Generate visualization images')
     parser.add_argument('--num_vis', type=int, default=10,
                         help='Number of visualizations to generate')
+    parser.add_argument('--best_worst', action='store_true',
+                        help='Select best and worst predictions (default: random)')
     parser.add_argument('--save_dir', type=str, default='./results',
                         help='Directory to save results')
     

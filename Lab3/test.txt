@@ -1,79 +1,116 @@
 # ELEC 475 Lab 3 - Testing Commands
-# All commands should be run from the Lab 3 directory
-# Make sure you have completed training and have checkpoint files in ./checkpoints/
+# All commands should be run from the Lab3/Lab3 directory
+# Updated: November 10, 2025
 
 # ============================================================================
-# ULTRA-COMPACT MODEL (475K parameters)
+# IMPORTANT: CHECKPOINT LOCATIONS
 # ============================================================================
-
-# Test baseline model (No KD)
-python test.py --model ultracompact --checkpoint ./checkpoints/best_model_ultracompact_none.pth --visualize --num_vis 10 --save_dir ./results
-
-# Test response-based KD model
-python test.py --model ultracompact --checkpoint ./checkpoints/best_model_ultracompact_response.pth --visualize --num_vis 10 --save_dir ./results
-
-# Test feature-based KD model
-python test.py --model ultracompact --checkpoint ./checkpoints/best_model_ultracompact_feature.pth --visualize --num_vis 10 --save_dir ./results
+# Trained models are stored in: ./Results/ultracompact/ultracompact_{kd_mode}/
+# Each subdirectory contains:
+#   - best_model_ultracompact_{kd_mode}.pth (model checkpoint)
+#   - results_ultracompact_{kd_mode}.txt (test results)
+#   - training_report_ultracompact_{kd_mode}.txt (training summary)
+#   - training_curves_ultracompact_{kd_mode}.png (loss/mIoU plots)
 
 # ============================================================================
-# STANDARD MODEL (3.4M parameters)
+# COMPLETED TESTS - ULTRA-COMPACT MODEL V1 (475,077 parameters = 0.48M)
 # ============================================================================
 
-# Test baseline model (No KD)
-python test.py --model standard --checkpoint ./checkpoints/best_model_standard_none.pth --visualize --num_vis 10 --save_dir ./results
+# Test baseline model (No KD) - COMPLETED
+# Results: mIoU = 0.2999, Inference = 72.87ms, Score = 0.8133
+python test.py --model ultracompact --checkpoint "Results/ultracompact/ultracompact_none/best_model_ultracompact_none.pth"
 
-# Test response-based KD model
-python test.py --model standard --checkpoint ./checkpoints/best_model_standard_response.pth --visualize --num_vis 10 --save_dir ./results
+# Test response-based KD model - COMPLETED
+# Results: mIoU = 0.3941 (+31.4% vs baseline), Inference = 81.12ms, Score = 1.0688
+python test.py --model ultracompact --checkpoint "Results/ultracompact/ultracompact_response/best_model_ultracompact_response.pth"
 
-# Test feature-based KD model
-python test.py --model standard --checkpoint ./checkpoints/best_model_standard_feature.pth --visualize --num_vis 10 --save_dir ./results
+# Test feature-based KD model - COMPLETED
+# Results: mIoU = 0.3897 (+29.9% vs baseline), Inference = 79.39ms, Score = 1.0566
+python test.py --model ultracompact --checkpoint "Results/ultracompact/ultracompact_feature/best_model_ultracompact_feature.pth"
 
 # ============================================================================
-# GENERATE COMPARISON TABLE (After all testing is complete)
+# GENERATE VISUALIZATIONS (Best and Worst Predictions)
+# ============================================================================
+# Standalone script to generate visualizations without re-running evaluation
+# Automatically selects top 5 best and bottom 5 worst predictions
+
+# Response-based KD visualizations - COMPLETED
+python generate_visualizations.py --checkpoint "Results/ultracompact/ultracompact_response/best_model_ultracompact_response.pth" --model ultracompact --num_vis 10 --save_dir "visualizations_response"
+
+# Baseline visualizations - COMPLETED
+python generate_visualizations.py --checkpoint "Results/ultracompact/ultracompact_none/best_model_ultracompact_none.pth" --model ultracompact --num_vis 10 --save_dir "visualizations_none"
+
+# Feature-based KD visualizations - COMPLETED
+python generate_visualizations.py --checkpoint "Results/ultracompact/ultracompact_feature/best_model_ultracompact_feature.pth" --model ultracompact --num_vis 10 --save_dir "visualizations_feature"
+
+# ============================================================================
+# GENERATE COMPARISON TABLE - COMPLETED
 # ============================================================================
 
 # Generate comprehensive comparison table with analysis
-python generate_comparison_table.py --results_dir ./results --checkpoints_dir ./checkpoints --save_latex --output comparison_table.tex
+python generate_comparison_table.py
 
 # ============================================================================
-# TESTING OUTPUT FILES
+# COMPLETED OUTPUT FILES
 # ============================================================================
-# For each test run, the following files will be generated in ./results/:
-#   - results_{model}_{kd_mode}.txt              (detailed results with per-class IoU)
-#   - results_{model}_{kd_mode}.pkl              (results in pickle format)
-#   - visualizations_{model}_{kd_mode}/          (folder with segmentation overlays)
-#   - visualizations_{model}_{kd_mode}/class_legend.png (color legend)
+# Test Results (in ./Results/ultracompact/ultracompact_{kd_mode}/):
+#   - results_ultracompact_none.txt              mIoU: 0.2999, Inference: 72.87ms
+#   - results_ultracompact_response.txt          mIoU: 0.3941, Inference: 81.12ms
+#   - results_ultracompact_feature.txt           mIoU: 0.3897, Inference: 79.39ms
 
-# After running generate_comparison_table.py:
-#   - comparison_table.txt                       (human-readable comparison)
-#   - comparison_table.tex                       (LaTeX format for report)
+# Visualizations (in ./Visualizations/visualizations_{kd_mode}/):
+#   - visualizations_none/                       10 images (5 best + 5 worst)
+#   - visualizations_response/                   10 images (5 best + 5 worst)
+#   - visualizations_feature/                    10 images (5 best + 5 worst)
+#   - Each folder includes class_legend.png and visualization_summary.txt
 
-# ============================================================================
-# OPTIONAL: TEST WITHOUT VISUALIZATIONS (faster)
-# ============================================================================
-# If you just want mIoU scores without generating visualizations:
-# python test.py --model ultracompact --checkpoint ./checkpoints/best_model_ultracompact_none.pth --save_dir ./results
+# Comparison Table:
+#   - comparison_table.txt                       Detailed comparison of all models
 
 # ============================================================================
-# OPTIONAL: GENERATE MORE/FEWER VISUALIZATIONS
+# KEY RESULTS SUMMARY
 # ============================================================================
-# Generate 20 visualizations instead of 10:
-# python test.py --model ultracompact --checkpoint ./checkpoints/best_model_ultracompact_none.pth --visualize --num_vis 20 --save_dir ./results
+# Training Hardware: NVIDIA A100-SXM4-40GB, CUDA 12.6, PyTorch 2.8.0+cu126
+# Testing Hardware: CPU (Intel), PyTorch 2.8.0+cpu, Windows 11
 
-# Generate only 5 visualizations:
-# python test.py --model ultracompact --checkpoint ./checkpoints/best_model_ultracompact_none.pth --visualize --num_vis 5 --save_dir ./results
+# Model: UltraCompact V1 (475,077 parameters = 0.48M)
+# Training Times:
+#   - Baseline (no KD):     0.48h (28.8 min)
+#   - Response-based KD:    0.46h (27.6 min)  
+#   - Feature-based KD:     0.59h (35.4 min)
+
+# Test Results:
+#   Model              | mIoU   | Inference | Score  | Improvement
+#   -------------------|--------|-----------|--------|-------------
+#   Without KD         | 0.2999 | 72.87 ms  | 0.8133 | baseline
+#   Response-based KD  | 0.3941 | 81.12 ms  | 1.0688 | +31.4%
+#   Feature-based KD   | 0.3897 | 79.39 ms  | 1.0566 | +29.9%
+
+# Best Classes: background (0.76), person (0.25), train (0.22)
+# Worst Classes: dining table (0.02), bottle (0.01), potted plant (0.01)
 
 # ============================================================================
-# TEST PRETRAINED FCN-RESNET50 (Step 1 baseline)
+# NOTES FOR REPORT
 # ============================================================================
-# Test the pretrained teacher model for comparison:
-python test_pretrained_fcn.py
+# - Response-based KD achieves best mIoU (0.3941) with 31.4% improvement
+# - Feature-based KD slightly faster inference than Response-based
+# - Baseline model has fastest inference (72.87ms) but lowest accuracy
+# - Training on A100 GPU: ~30ms per image
+# - Testing on CPU: ~75ms per image (2.5x slower)
+# - All models converged within 50 epochs
+# - Visualizations show success on large objects (person, train, cat)
+# - Failures mainly on small/thin objects (bottle, chair, bicycle)
 
 # ============================================================================
-# NOTES
+# OPTIONAL: RE-RUN SPECIFIC TESTS
 # ============================================================================
-# - Testing is much faster than training (~5-10 minutes per model)
-# - Visualizations show: Original Image | Ground Truth | Prediction
-# - Per-class IoU is automatically calculated and saved
-# - Score is calculated as: 4 × mIoU / (1 + parameters_in_millions)
-# - Select 3-5 good visualizations and 2-3 failure cases for your report
+# If you need to re-generate results or visualizations:
+
+# Re-run test only (no visualizations, faster)
+# python test.py --model ultracompact --checkpoint "Results/ultracompact/ultracompact_response/best_model_ultracompact_response.pth"
+
+# Generate different number of visualizations (e.g., 20 instead of 10)
+# python generate_visualizations.py --checkpoint "Results/ultracompact/ultracompact_response/best_model_ultracompact_response.pth" --model ultracompact --num_vis 20 --save_dir "visualizations_response_20"
+
+# Re-generate comparison table with LaTeX format
+# python generate_comparison_table.py --save_latex --output comparison_table.tex
