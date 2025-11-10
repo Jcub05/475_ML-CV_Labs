@@ -124,7 +124,12 @@ def response_based_kd_loss(student_logits, teacher_logits, targets, temperature=
     student_soft = F.log_softmax(student_logits / temperature, dim=1)
     teacher_soft = F.softmax(teacher_logits / temperature, dim=1)
     
-    kd_loss = F.kl_div(student_soft, teacher_soft, reduction='batchmean') * (temperature ** 2)
+    # Use batchmean (divides by batch size only, per Hinton's paper)
+    # Then normalize by spatial dimensions (H*W) to match cross_entropy scale
+    # cross_entropy averages over (B, H, W), so KD should match this behavior
+    kd_loss = F.kl_div(student_soft, teacher_soft, reduction='batchmean')
+    spatial_size = student_logits.shape[2] * student_logits.shape[3]  # H * W
+    kd_loss = kd_loss / spatial_size * (temperature ** 2)
     
     # Combined loss
     total_loss = alpha * ce_loss + beta * kd_loss
@@ -317,15 +322,17 @@ def validate(model, dataloader, device, num_classes=21):
                 # Resize to fixed size
                 h, w = target.shape
                 img = F.interpolate(img, size=(256, 256), mode='bilinear', align_corners=False)
+                target_256 = F.interpolate(target.unsqueeze(0).unsqueeze(0).float(), 
+                                          size=(256, 256), 
+                                          mode='nearest').squeeze().long()
                 
                 # Forward pass
                 output = model(img)
                 
-                # Calculate loss at this resolution
-                target_resized = F.interpolate(target.unsqueeze(0).unsqueeze(0).float(), 
-                                               size=output.shape[-2:], 
-                                               mode='nearest').squeeze().long()
-                loss = criterion(output, target_resized.unsqueeze(0))
+                # Calculate loss at FULL RESOLUTION (same as training)
+                # Upsample output to match target size for loss calculation
+                output_upsampled = F.interpolate(output, size=(256, 256), mode='bilinear', align_corners=False)
+                loss = criterion(output_upsampled, target_256.unsqueeze(0))
                 all_losses.append(loss.item())
                 
                 # Resize back to original size for IoU calculation
