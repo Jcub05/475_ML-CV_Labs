@@ -1,0 +1,399 @@
+================================================================================
+GITHUB COPILOT CHAT HISTORY SUMMARY
+ELEC 475 Lab 3 - Knowledge Distillation for Semantic Segmentation
+Date: November 10-11, 2025
+================================================================================
+
+This document summarizes the GitHub Copilot chat session for completing ELEC 475
+Lab 3 Question 4 (Experimental Results and Analysis).
+
+================================================================================
+SESSION OVERVIEW
+================================================================================
+
+Primary Objective:
+Complete Lab 3 Question 4 requirements including:
+- Hardware description (training and testing environments)
+- Time performance metrics (training time, inference speed)
+- mIoU statistics and accuracy measures
+- Comparison table of knowledge distillation methods
+- Qualitative results (segmentation visualizations)
+
+Models Tested:
+- UltraCompact V1 (475,077 parameters = 0.48M)
+- Three variants: Without KD, Response-based KD, Feature-based KD
+
+================================================================================
+KEY MILESTONES
+================================================================================
+
+1. TESTING PHASE
+   - Fixed PyTorch 2.6+ checkpoint loading issue (weights_only=False)
+   - Successfully tested all 3 models on local CPU
+   - Generated results .txt files with complete metrics
+
+2. VISUALIZATION GENERATION
+   - Created standalone generate_visualizations.py script
+   - Implemented automatic best/worst prediction selection
+   - Fixed dataset.images access bug (AttributeError)
+   - Generated 30 visualization images (10 per model)
+
+3. COMPARISON TABLE
+   - Updated generate_comparison_table.py to parse .txt files
+   - Successfully aggregated results from all models
+   - Generated comparison_table.txt with detailed analysis
+
+4. DOCUMENTATION UPDATES
+   - Updated test.txt with actual results and commands
+   - Updated train.txt with training times and observations
+   - Created comprehensive Section 4 for lab report
+
+5. GIT OPERATIONS
+   - Resolved git push conflicts
+   - Force-added Results/ and Visualizations/ folders
+   - Successfully pushed 60.56 MB to GitHub
+
+================================================================================
+CONVERSATION HIGHLIGHTS
+================================================================================
+
+USER: "could you pull the visualizations out from the testing file so it just 
+      generates visualizations, I don't want to repeat the testing I already did."
+
+ASSISTANT: Created generate_visualizations.py - a standalone script that only 
+generates visualizations without re-running evaluation. Automatically selects 
+top 5 best and bottom 5 worst predictions based on IoU.
+
+---
+
+USER: "Okay all the visualizations should be done now. I now want to populate 
+      the comparison table. Check that the generate comparison table python 
+      file still is up to date then run it."
+
+ASSISTANT: Updated generate_comparison_table.py to parse .txt files instead of 
+.pkl files, fixed directory structure paths, and successfully generated comparison 
+table showing:
+- Without KD: mIoU 0.2999, 72.87ms inference
+- Response-based KD: mIoU 0.3941 (+31.4%), 81.12ms inference  
+- Feature-based KD: mIoU 0.3897 (+29.9%), 79.39ms inference
+
+---
+
+USER: "could you update the test.txt and train.txt files with the most 
+      up-to-date info?"
+
+ASSISTANT: Updated both files with:
+- Actual training times (0.60h, 0.63h, 0.61h)
+- Test results with improvements
+- Best/worst segmented classes
+- Comprehensive notes for report
+
+---
+
+USER: "coudl you write me here a section 4 of my report?"
+
+ASSISTANT: Generated comprehensive Section 4 including:
+- 4.1 Experimental Setup (Hardware, Dataset, Training Config)
+- 4.2 Training Performance (Training time analysis)
+- 4.3 Testing Performance (Inference speed, mIoU analysis)
+- 4.4 Qualitative Results (Success examples, failure analysis, comparisons)
+- 4.5 Discussion
+- Specified where to insert tables and figures
+
+---
+
+USER: "Where did you get the training time from?"
+
+ASSISTANT: Acknowledged error - initially stated incorrect times (0.48h, 0.46h, 
+0.59h) from conversation context. Corrected to actual values from training 
+reports:
+- Without KD: 0.60h (36.0 min)
+- Response-based KD: 0.63h (37.8 min)
+- Feature-based KD: 0.61h (36.6 min)
+
+---
+
+USER: "Wait, could you please update the final train loss to be scaled?"
+
+ASSISTANT: Clarified that for KD methods, should report CE loss component 
+(0.4882, 0.5118) instead of full combined losses (48417, 49717) for fair 
+comparison to baseline's pure CE loss (0.2446).
+
+---
+
+USER: "My git push didn't work."
+
+ASSISTANT: Diagnosed issue (local branch behind remote), resolved with git pull, 
+then successfully pushed.
+
+---
+
+USER: "My github isn't updated with results and visualizations and everything"
+
+ASSISTANT: Identified .gitignore blocking Results/ and Visualizations/ folders.
+Force-added with `git add -f`, committed 55 files including:
+- 3 model checkpoints (.pth files)
+- Test results (.txt files)
+- 30 visualization images
+- Training curves and reports
+Successfully pushed 60.56 MB to GitHub.
+
+---
+
+USER: "Is it normal that the # of parameters is the same accross all models 
+      with and without kd?"
+
+ASSISTANT: Confirmed this is completely normal. Knowledge Distillation doesn't 
+change the student model's architecture - it only changes how the model is 
+trained. All three models have identical 475,077 parameters. The entire point 
+of KD is to improve a smaller model's performance without increasing its size.
+
+================================================================================
+TECHNICAL RESULTS SUMMARY
+================================================================================
+
+TRAINING ENVIRONMENT:
+- GPU: NVIDIA A100-SXM4-40GB
+- CUDA Version: 12.6
+- OS: Linux 6.6.105+
+- PyTorch: 2.8.0+cu126
+- Python: 3.12.12
+
+TESTING ENVIRONMENT:
+- CPU: Intel
+- OS: Windows 11
+- PyTorch: 2.8.0+cpu
+- Python: 3.13.1
+
+MODEL: UltraCompact V1
+- Parameters: 475,077 (0.48M)
+- Architecture: MobileNetV3-Small backbone with lightweight ASPP
+
+DATASET: PASCAL VOC 2012
+- Training: 1,464 images
+- Validation: 1,449 images
+- Classes: 21 (including background)
+
+HYPERPARAMETERS:
+- Epochs: 50
+- Batch size: 8
+- Learning rate: 0.001 (cosine annealing)
+- Optimizer: Adam
+- KD Temperature: 3.0
+- Alpha (CE weight): 0.5
+- Beta (KD weight): 0.5
+
+TRAINING TIMES (on A100 GPU):
+- Without KD: 0.60h (36.0 min, 43.03s/epoch, 29.39ms/image)
+- Response-based KD: 0.63h (37.8 min, 45.12s/epoch, 30.82ms/image)
+- Feature-based KD: 0.61h (36.6 min, 43.97s/epoch, 30.04ms/image)
+
+VALIDATION PERFORMANCE (during training):
+- Without KD: Best val mIoU 0.4181
+- Response-based KD: Best val mIoU 0.4508
+- Feature-based KD: Best val mIoU 0.4428
+
+TEST PERFORMANCE (on CPU):
+┌─────────────────────┬────────┬────────────┬──────────────┬───────┬────────┬─────────────┐
+│ KD Method           │ mIoU   │ Parameters │ Inference    │ FPS   │ Score  │ Improvement │
+├─────────────────────┼────────┼────────────┼──────────────┼───────┼────────┼─────────────┤
+│ Without             │ 0.2999 │ 475,077    │ 72.87 ms     │ 13.7  │ 0.8133 │ baseline    │
+│ Response-based      │ 0.3941 │ 475,077    │ 81.12 ms     │ 12.3  │ 1.0688 │ +31.4%      │
+│ Feature-based       │ 0.3897 │ 475,077    │ 79.39 ms     │ 12.6  │ 1.0566 │ +29.9%      │
+└─────────────────────┴────────┴────────────┴──────────────┴───────┴────────┴─────────────┘
+
+Score = 4 × mIoU / (1 + parameters in millions)
+
+PER-CLASS PERFORMANCE (averaged):
+Best classes:
+  - background: 0.7588
+  - person: 0.2497
+  - train: 0.2176
+  - cat: 0.1971
+  - aeroplane: 0.1931
+
+Worst classes:
+  - dining table: 0.0193
+  - bottle: 0.0141
+  - potted plant: 0.0133
+  - chair: 0.0052
+  - bicycle: 0.0026
+
+================================================================================
+FILES GENERATED
+================================================================================
+
+SCRIPTS CREATED:
+- generate_visualizations.py - Standalone visualization generator
+- generate_comparison_table.py - Results aggregation and analysis
+
+RESULTS FILES (in Results/ultracompact/):
+- ultracompact_none/
+  * best_model_ultracompact_none.pth
+  * results_ultracompact_none.txt
+  * training_curves_ultracompact_none.png
+  * training_report_ultracompact_none.txt
+
+- ultracompact_response/
+  * best_model_ultracompact_response.pth
+  * results_ultracompact_response.txt
+  * training_curves_ultracompact_response.png
+  * training_report_ultracompact_response.txt
+
+- ultracompact_feature/
+  * best_model_ultracompact_feature.pth
+  * results_ultracompact_feature.txt
+  * training_curves_ultracompact_feature.png
+  * training_report_ultracompact_feature.txt
+
+VISUALIZATIONS (in Visualizations/):
+- visualizations_none/ (10 images: 5 best + 5 worst)
+- visualizations_response/ (10 images: 5 best + 5 worst)
+- visualizations_feature/ (10 images: 5 best + 5 worst)
+- Each includes class_legend.png and visualization_summary.txt
+
+COMPARISON TABLE:
+- comparison_table.txt - Complete comparison with analysis
+
+DOCUMENTATION:
+- test.txt - Updated with actual results and commands
+- train.txt - Updated with training times and notes
+
+================================================================================
+KEY INSIGHTS AND OBSERVATIONS
+================================================================================
+
+1. KNOWLEDGE DISTILLATION EFFECTIVENESS
+   - Both KD methods significantly improved mIoU (30-31% over baseline)
+   - Response-based KD achieved best performance (0.3941 mIoU)
+   - Minimal inference overhead (~10% slower than baseline)
+
+2. TRAINING EFFICIENCY
+   - All models converged within 50 epochs
+   - Training times very similar (36-38 minutes on A100)
+   - Response-based KD actually trained slightly faster than feature-based
+
+3. MODEL LIMITATIONS
+   - Ultra-compact architecture struggles with small objects
+   - Poor performance on thin structures (bicycles, chairs)
+   - Class confusion on rare/similar classes
+   - Expected trade-off between size and accuracy
+
+4. VALIDATION VS TEST PERFORMANCE
+   - Gap between validation (0.45-0.44) and test (0.39-0.40) for KD models
+   - Suggests some overfitting or domain shift
+   - Common in compact models with limited capacity
+
+5. DEPLOYMENT CONSIDERATIONS
+   - Real-time capable on CPU (~12-14 FPS)
+   - Suitable for edge deployment scenarios
+   - 475K parameters enables mobile/embedded use
+   - KD provides significant accuracy boost without size penalty
+
+================================================================================
+ISSUES RESOLVED
+================================================================================
+
+1. PyTorch 2.6+ Compatibility
+   Problem: weights_only parameter default changed to True
+   Solution: Added weights_only=False to torch.load()
+
+2. Random Visualization Sampling
+   Problem: Need specific best/worst examples for report
+   Solution: Implemented automatic IoU-based selection
+
+3. AttributeError in Visualization
+   Problem: dataset.dataset.images[idx] access error
+   Solution: Changed to dataset.images[idx]
+
+4. Git Push Rejection
+   Problem: Local branch behind remote
+   Solution: git pull then git push
+
+5. Results Not in Git
+   Problem: .gitignore blocking Results/ and Visualizations/
+   Solution: Force add with git add -f
+
+6. Comparison Table Script
+   Problem: Expected .pkl files but had .txt files
+   Solution: Rewrote parser to handle .txt format
+
+================================================================================
+REPORT WRITING GUIDANCE
+================================================================================
+
+SECTION 4 STRUCTURE:
+4.1 Experimental Setup
+    - Hardware description (training vs testing)
+    - Dataset details
+    - Training configuration
+    
+4.2 Training Performance  
+    - Training time analysis table
+    - Time per image metrics
+    
+4.3 Testing Performance
+    - Comprehensive comparison table (INSERT TABLE HERE)
+    - mIoU analysis with improvements
+    - Per-class performance breakdown
+    
+4.4 Qualitative Results
+    - Success examples (INSERT 3 FIGURES)
+    - Failure case analysis (INSERT 2 FIGURES)
+    - Side-by-side comparison (INSERT 1 FIGURE)
+    
+4.5 Discussion
+    - KD effectiveness summary
+    - Trade-offs and limitations
+    - Deployment considerations
+
+FIGURES TO INCLUDE:
+1. Table 1: Training Statistics
+2. Table 2: Performance Comparison
+3. Figure 1: 3 successful segmentation examples (best predictions)
+4. Figure 2: 2-3 failure cases (worst predictions)
+5. Figure 3: Side-by-side comparison of all 3 models on same image
+
+VISUALIZATION SELECTION:
+- Best examples from visualizations_response/ folder
+- Failure cases from visualizations_none/ or any model
+- Select images that clearly show success (large objects) and 
+  failures (small/thin objects)
+
+================================================================================
+FINAL STATUS
+================================================================================
+
+✅ All 3 models trained successfully on A100 GPU
+✅ All 3 models tested successfully on CPU
+✅ Test results generated with complete metrics
+✅ 30 visualizations created (best/worst automatically selected)
+✅ Comparison table generated with detailed analysis
+✅ Documentation updated (test.txt, train.txt)
+✅ All results pushed to GitHub (60.56 MB)
+✅ Report Section 4 drafted with structure and content
+
+READY FOR: Lab 3 report submission
+
+================================================================================
+REPOSITORY INFORMATION
+================================================================================
+
+Repository: 475_ML-CV_Labs
+Owner: Jcub05
+Branch: master → main
+GitHub: https://github.com/Jcub05/475_ML-CV_Labs
+
+Last Commit:
+"Add Lab 3 results, visualizations, and updated documentation
+- 3 trained UltraCompact models with KD
+- Test results with mIoU and inference times  
+- Best/worst segmentation visualizations
+- Comparison table and updated train/test docs"
+
+55 files changed, 505 insertions(+)
+Total size: 60.56 MB
+
+================================================================================
+END OF CHAT SUMMARY
+================================================================================
