@@ -1,0 +1,23 @@
+================================================================================
+VISUALIZATION SUMMARY
+================================================================================
+
+BEST PREDICTIONS:
+--------------------------------------------------------------------------------
+  visualization_best_775.png                mIoU: 0.9367
+  visualization_best_1343.png               mIoU: 0.9195
+  visualization_best_927.png                mIoU: 0.9176
+  visualization_best_1015.png               mIoU: 0.9164
+  visualization_best_1167.png               mIoU: 0.9076
+
+WORST PREDICTIONS:
+--------------------------------------------------------------------------------
+  visualization_worst_839.png               mIoU: 0.0262
+  visualization_worst_527.png               mIoU: 0.0105
+  visualization_worst_1193.png              mIoU: 0.0079
+  visualization_worst_263.png               mIoU: 0.0000
+  visualization_worst_1172.png              mIoU: 0.0000
+
+================================================================================
+Total visualizations: 10
+================================================================================

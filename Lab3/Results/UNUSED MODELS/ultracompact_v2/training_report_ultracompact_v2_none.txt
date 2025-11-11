@@ -1,0 +1,50 @@
+======================================================================
+Training Report: ultracompact_v2 with none KD
+======================================================================
+
+HARDWARE & ENVIRONMENT:
+----------------------------------------------------------------------
+  Device: cuda
+  GPU: NVIDIA A100-SXM4-40GB
+  CUDA Version: 12.6
+  PyTorch Version: 2.8.0+cu126
+  Python Version: 3.12.12
+  Operating System: Linux 6.6.105+
+
+======================================================================
+HYPERPARAMETERS:
+----------------------------------------------------------------------
+  model                    : ultracompact_v2
+  kd_mode                  : none
+  epochs                   : 50
+  batch_size               : 8
+  learning_rate            : 0.001
+  weight_decay             : 0.0001
+  temperature              : 3.0
+  alpha                    : 0.5
+  beta                     : 0.5
+  optimizer                : Adam
+  scheduler                : CosineAnnealingLR
+  num_parameters           : 645245
+  trainable_parameters     : 645245
+
+======================================================================
+TRAINING STATISTICS:
+----------------------------------------------------------------------
+  Total training time: 0.62 hours (2247.32 seconds)
+  Average epoch time: 44.92 seconds
+  Time per image (train): 30.68 ms
+  Best validation mIoU: 0.4302
+  Final validation mIoU: 0.4247
+  Final validation loss: 0.6737
+  Final train loss: 0.1697
+  Final CE loss: 0.1697
+  Final KD loss: 0.0000
+
+======================================================================
+FILES GENERATED:
+----------------------------------------------------------------------
+  Best model: best_model_ultracompact_v2_none.pth
+  Training curves: training_curves_ultracompact_v2_none.png
+  This report: training_report_ultracompact_v2_none.txt
+======================================================================
