@@ -120,10 +120,19 @@ class Config:
         self.val_captions_path = self.data_root / self.val_captions_file
         self.cache_path = self.data_root / self.cache_dir
         
-        # Create checkpoint and results directories in the Lab4 folder
-        lab4_dir = Path(__file__).parent
-        self.checkpoint_path = lab4_dir / self.checkpoint_dir
-        self.results_path = lab4_dir / self.results_dir
+        # Create checkpoint and results directories
+        # On Colab: save to Google Drive (persistent)
+        # On Local: save to Lab4 folder
+        if self.is_colab:
+            # Save to Drive for persistence across sessions
+            drive_base = Path("/content/drive/MyDrive/datasets_Lab4")
+            self.checkpoint_path = drive_base / "Lab4_checkpoints"
+            self.results_path = drive_base / "Lab4_results"
+        else:
+            # Local: save in Lab4 folder
+            lab4_dir = Path(__file__).parent
+            self.checkpoint_path = lab4_dir / self.checkpoint_dir
+            self.results_path = lab4_dir / self.results_dir
         
     def create_directories(self):
         """Create necessary directories if they don't exist."""
