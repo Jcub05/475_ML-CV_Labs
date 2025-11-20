@@ -1,0 +1,119 @@
+# CLIP Fine-tuning Training Commands
+# These commands assume you have properly set up the environment and dataset
+
+# ============================================================================
+# LOCAL TRAINING (Windows/Linux/Mac with GPU)
+# ============================================================================
+
+# 1. First, ensure you have the dataset downloaded and extracted:
+#    - Download COCO 2014 dataset to datasets_Lab4/coco_2014/
+#    - Extract train2014.zip, val2014.zip, and annotations_trainval2014.zip
+#    - Directory structure should be:
+#      datasets_Lab4/coco_2014/
+#        ├── train2014/
+#        ├── val2014/
+#        └── annotations/
+
+# 2. Cache text embeddings (run once before training):
+python cache_text_embeddings.py
+
+# 3. Train baseline model:
+python train.py
+
+# 4. Train with custom hyperparameters:
+python train.py --batch_size 128 --epochs 20 --learning_rate 5e-5
+
+# ============================================================================
+# GOOGLE COLAB TRAINING
+# ============================================================================
+
+# 1. Mount Google Drive (run this in a Colab cell):
+from google.colab import drive
+drive.mount('/content/drive')
+
+# 2. Clone repository:
+!git clone https://github.com/Jcub05/475_ML-CV_Labs.git
+%cd 475_ML-CV_Labs/Lab4
+
+# 3. Install dependencies:
+!pip install -q transformers torch torchvision kagglehub tqdm pillow matplotlib
+
+# 4. Extract dataset from Google Drive (if stored as zip files):
+!unzip -q /content/drive/MyDrive/datasets_Lab4/coco_2014/train2014.zip -d /content/datasets_Lab4/coco_2014/
+!unzip -q /content/drive/MyDrive/datasets_Lab4/coco_2014/val2014.zip -d /content/datasets_Lab4/coco_2014/
+!unzip -q /content/drive/MyDrive/datasets_Lab4/coco_2014/annotations_trainval2014.zip -d /content/datasets_Lab4/coco_2014/
+
+# Alternative: Copy images from Drive to local Colab storage for faster training:
+!mkdir -p /content/datasets_Lab4/coco_2014
+!cp -r /content/drive/MyDrive/datasets_Lab4/coco_2014/train2014 /content/datasets_Lab4/coco_2014/
+!cp -r /content/drive/MyDrive/datasets_Lab4/coco_2014/val2014 /content/datasets_Lab4/coco_2014/
+!cp -r /content/drive/MyDrive/datasets_Lab4/coco_2014/annotations /content/datasets_Lab4/coco_2014/
+
+# 5. Cache text embeddings (run once):
+!python cache_text_embeddings.py
+
+# 6. Train baseline model (checkpoints auto-save to Google Drive):
+!python train.py
+
+# 7. Train with larger batch size (Colab Pro/Pro+ with high-RAM GPU):
+!python train.py --batch_size 128 --epochs 20
+
+# ============================================================================
+# ABLATION STUDY
+# ============================================================================
+
+# Run complete ablation study (tests all configurations):
+python ablation_study.py
+
+# Quick ablation (baseline + 2 modifications only):
+python ablation_study.py --quick
+
+# Test specific configurations:
+python ablation_study.py --configs baseline batchnorm dropout
+
+# Available configurations:
+# - baseline: Standard ResNet50 + 2-layer projection
+# - batchnorm: Adds BatchNorm to projection head
+# - dropout: Adds Dropout (0.1) to projection head
+# - deeper: 3-layer projection head instead of 2-layer
+# - learnable_temp: Learnable temperature parameter
+# - batchnorm_dropout: Combined BatchNorm + Dropout
+# - all_combined: All modifications together
+
+# ============================================================================
+# MONITORING TRAINING
+# ============================================================================
+
+# Training progress is automatically displayed with tqdm progress bars showing:
+# - Current epoch and batch
+# - Loss value
+# - ETA (estimated time remaining)
+# - Validation metrics (Recall@1, Recall@5, Recall@10)
+
+# Logs are saved to:
+# - Local: checkpoints/training.log
+# - Colab: /content/drive/MyDrive/datasets_Lab4/Lab4_checkpoints/training.log
+
+# ============================================================================
+# CHECKPOINTING
+# ============================================================================
+
+# Best model is automatically saved based on validation Recall@5:
+# - Local: checkpoints/best_model.pth
+# - Colab: /content/drive/MyDrive/datasets_Lab4/Lab4_checkpoints/best_model.pth
+
+# Training curves are saved as:
+# - Local: results/training_curves.png
+# - Colab: /content/drive/MyDrive/datasets_Lab4/Lab4_results/training_curves.png
+
+# ============================================================================
+# NOTES
+# ============================================================================
+
+# - Training takes ~2-4 hours per epoch on a modern GPU (RTX 3080/A100)
+# - Batch size 64 requires ~10GB GPU memory
+# - Batch size 128 requires ~16GB GPU memory
+# - Use --batch_size 32 if you run out of GPU memory
+# - Text embedding caching speeds up training by ~3x
+# - Checkpoints are saved every epoch and on best validation performance
+# - On Colab, checkpoints persist in Google Drive across sessions

@@ -1,0 +1,129 @@
+# CLIP Fine-tuning Testing Commands
+# These commands evaluate trained models and generate visualizations
+
+# ============================================================================
+# LOCAL TESTING (Windows/Linux/Mac)
+# ============================================================================
+
+# 1. Test baseline model with default checkpoint:
+python test.py
+
+# 2. Test with specific checkpoint:
+python test.py --checkpoint checkpoints/best_model.pth
+
+# 3. Test with custom batch size:
+python test.py --batch_size 128
+
+# 4. Test specific ablation configuration:
+python test.py --checkpoint checkpoints/ablation_batchnorm/best_model.pth
+
+# ============================================================================
+# GOOGLE COLAB TESTING
+# ============================================================================
+
+# 1. Mount Google Drive and navigate to repository:
+from google.colab import drive
+drive.mount('/content/drive')
+
+!git clone https://github.com/Jcub05/475_ML-CV_Labs.git
+%cd 475_ML-CV_Labs/Lab4
+
+# 2. Install dependencies:
+!pip install -q transformers torch torchvision tqdm pillow matplotlib
+
+# 3. Test model (loads checkpoint from Google Drive):
+!python test.py
+
+# 4. Test specific checkpoint:
+!python test.py --checkpoint /content/drive/MyDrive/datasets_Lab4/Lab4_checkpoints/best_model.pth
+
+# ============================================================================
+# VISUALIZATION
+# ============================================================================
+
+# Run visualizations on test set (generates qualitative results):
+python visualize.py
+
+# Visualize text-to-image retrieval:
+python visualize.py --mode text_to_image --queries "a cat sitting on a couch" "a red car on the street"
+
+# Visualize image-to-text retrieval:
+python visualize.py --mode image_to_text --image_path datasets_Lab4/coco_2014/val2014/COCO_val2014_000000000042.jpg
+
+# Zero-shot classification:
+python visualize.py --mode zero_shot --image_path datasets_Lab4/coco_2014/val2014/COCO_val2014_000000000042.jpg --labels "cat" "dog" "car" "person"
+
+# ============================================================================
+# EVALUATION METRICS
+# ============================================================================
+
+# The test script reports the following metrics:
+
+# Image-to-Text Retrieval:
+# - Recall@1: Percentage of queries where correct text is in top-1 result
+# - Recall@5: Percentage of queries where correct text is in top-5 results
+# - Recall@10: Percentage of queries where correct text is in top-10 results
+
+# Text-to-Image Retrieval:
+# - Recall@1: Percentage of queries where correct image is in top-1 result
+# - Recall@5: Percentage of queries where correct image is in top-5 results
+# - Recall@10: Percentage of queries where correct image is in top-10 results
+
+# Expected baseline performance (after 15 epochs):
+# Image->Text: R@1 ~0.30-0.35, R@5 ~0.55-0.65, R@10 ~0.70-0.80
+# Text->Image: R@1 ~0.25-0.30, R@5 ~0.50-0.60, R@10 ~0.65-0.75
+
+# ============================================================================
+# COMPARING ABLATION RESULTS
+# ============================================================================
+
+# After running ablation study, compare results:
+cat results/ablation_comparison_table.txt
+
+# Or on Windows PowerShell:
+Get-Content results/ablation_comparison_table.txt
+
+# On Google Colab:
+!cat /content/drive/MyDrive/datasets_Lab4/Lab4_results/ablation_comparison_table.txt
+
+# View individual ablation results:
+cat checkpoints/ablation_batchnorm/results.json
+
+# ============================================================================
+# BATCH EVALUATION OF ALL ABLATION MODELS
+# ============================================================================
+
+# Test all ablation configurations:
+python test.py --checkpoint checkpoints/ablation_baseline/best_model.pth
+python test.py --checkpoint checkpoints/ablation_batchnorm/best_model.pth
+python test.py --checkpoint checkpoints/ablation_dropout/best_model.pth
+python test.py --checkpoint checkpoints/ablation_deeper/best_model.pth
+python test.py --checkpoint checkpoints/ablation_learnable_temp/best_model.pth
+python test.py --checkpoint checkpoints/ablation_batchnorm_dropout/best_model.pth
+python test.py --checkpoint checkpoints/ablation_all_combined/best_model.pth
+
+# ============================================================================
+# OUTPUT FILES
+# ============================================================================
+
+# Testing generates the following files:
+
+# Local:
+# - results/test_metrics.txt: Detailed metrics report
+# - results/retrieval_examples.png: Visualization of retrieval results
+
+# Google Colab:
+# - /content/drive/MyDrive/datasets_Lab4/Lab4_results/test_metrics.txt
+# - /content/drive/MyDrive/datasets_Lab4/Lab4_results/retrieval_examples.png
+
+# ============================================================================
+# NOTES
+# ============================================================================
+
+# - Testing takes ~5-10 minutes on validation set (41k images)
+# - Larger batch sizes speed up testing but require more GPU memory
+# - Batch size 128 requires ~16GB GPU memory
+# - Use --batch_size 32 if you run out of GPU memory
+# - Results are automatically saved to results/ directory
+# - On Colab, results persist in Google Drive
+# - Visualization functions can be used interactively in Jupyter notebooks
