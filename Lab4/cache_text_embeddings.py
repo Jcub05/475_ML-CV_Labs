@@ -17,7 +17,8 @@ def cache_text_embeddings(
     output_file: Path,
     model_name: str = "openai/clip-vit-base-patch32",
     batch_size: int = 256,
-    device: str = "cuda"
+    device: str = "cuda",
+    use_local_cache: bool = True
 ):
     """
     Pre-compute and cache text embeddings for all captions.
@@ -28,6 +29,7 @@ def cache_text_embeddings(
         model_name: HuggingFace CLIP model name
         batch_size: Batch size for encoding (larger = faster but more memory)
         device: Device to run encoding on
+        use_local_cache: If True, save to /content first then copy to final location (faster on Colab)
     """
     print(f"\n{'=' * 80}")
     print(f"Caching Text Embeddings")
@@ -37,8 +39,16 @@ def cache_text_embeddings(
     print(f"Device: {device}")
     print(f"Batch size: {batch_size}\n")
     
-    # Create output directory if needed
-    output_file.parent.mkdir(parents=True, exist_ok=True)
+    # For Colab: use local temp storage for faster I/O
+    if use_local_cache and '/content/drive/' in str(output_file):
+        temp_output = Path('/content') / 'temp_cache' / output_file.name
+        temp_output.parent.mkdir(parents=True, exist_ok=True)
+        print(f"⚡ Using local cache for speed: {temp_output}")
+        print(f"   Will copy to Drive when complete.\n")
+        actual_output = temp_output
+    else:
+        actual_output = output_file
+        output_file.parent.mkdir(parents=True, exist_ok=True)
     
     # Load CLIP model and processor
     print("Loading CLIP model...")
@@ -101,13 +111,22 @@ def cache_text_embeddings(
     
     print(f"\n✓ Encoded {len(embeddings_cache)} caption embeddings\n")
     
-    # Save to disk
-    print(f"Saving embeddings to {output_file}...")
-    torch.save(embeddings_cache, output_file)
+    # Save to disk (local temp first if using Colab)
+    print(f"Saving embeddings to {actual_output}...")
+    torch.save(embeddings_cache, actual_output)
     
     # Verify save
-    file_size_mb = output_file.stat().st_size / (1024 * 1024)
+    file_size_mb = actual_output.stat().st_size / (1024 * 1024)
     print(f"✓ Saved successfully ({file_size_mb:.2f} MB)\n")
+    
+    # Copy to Drive if we used local cache
+    if use_local_cache and actual_output != output_file:
+        print(f"Copying to Google Drive: {output_file}...")
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        import shutil
+        shutil.copy2(actual_output, output_file)
+        print(f"✓ Copied to Drive ({file_size_mb:.2f} MB)\n")
+        file_size_mb = output_file.stat().st_size / (1024 * 1024)
     
     # Print statistics
     print(f"{'=' * 80}")
