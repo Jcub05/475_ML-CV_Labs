@@ -108,6 +108,13 @@ def cache_text_embeddings(
                 # Create unique key: "image_id_caption_idx"
                 key = f"{image_id}_{caption_idx}"
                 embeddings_cache[key] = embedding
+            
+            # Clear GPU cache to prevent memory accumulation
+            if device == "cuda":
+                torch.cuda.empty_cache()
+            
+            # Delete inputs to free memory
+            del inputs, text_features
     
     print(f"\n✓ Encoded {len(embeddings_cache)} caption embeddings\n")
     
