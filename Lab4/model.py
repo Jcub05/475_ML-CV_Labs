@@ -284,3 +284,25 @@ if __name__ == "__main__":
     
     print("\n✓ Model test complete!")
     print("=" * 80)
+
+
+def create_clip_model(text_encoder, tokenizer, embed_dim=512):
+    """
+    Factory function to create baseline CLIP model.
+    Used by ablation_study.py for compatibility.
+    
+    Args:
+        text_encoder: Frozen CLIP text encoder (not used, model loads its own)
+        tokenizer: CLIP tokenizer (not used)
+        embed_dim: Embedding dimension (default 512)
+    
+    Returns:
+        CLIPFineTuneModel instance
+    """
+    model = CLIPFineTuneModel(
+        embed_dim=embed_dim,
+        pretrained_resnet=True,
+        clip_model_name='openai/clip-vit-base-patch32',
+        freeze_text_encoder=True
+    )
+    return model
