@@ -35,18 +35,31 @@ class COCOCachedDataset(Dataset):
             if caption_idx == '0':
                 image_embeddings[image_id] = embedding
         
-        # Sort by image_id for consistency
-        self.image_ids = sorted(image_embeddings.keys())
-        self.embeddings = torch.stack([image_embeddings[img_id] for img_id in self.image_ids])
-        
-        # Build image paths
+        # Build image paths and filter out missing images
         split_name = 'train' if 'train' in str(images_dir) else 'val'
-        self.image_paths = []
-        for img_id in self.image_ids:
+        valid_image_ids = []
+        valid_embeddings = []
+        valid_paths = []
+        missing_count = 0
+        
+        for img_id in sorted(image_embeddings.keys()):
             img_path = self.images_dir / f"COCO_{split_name}2014_{img_id:012d}.jpg"
-            self.image_paths.append(img_path)
+            
+            # Only include if image file exists
+            if img_path.exists():
+                valid_image_ids.append(img_id)
+                valid_embeddings.append(image_embeddings[img_id])
+                valid_paths.append(img_path)
+            else:
+                missing_count += 1
+        
+        self.image_ids = valid_image_ids
+        self.embeddings = torch.stack(valid_embeddings) if valid_embeddings else torch.empty(0)
+        self.image_paths = valid_paths
         
         print(f"✓ Loaded {len(self)} samples with embeddings")
+        if missing_count > 0:
+            print(f"  ⚠ Skipped {missing_count} samples with missing images")
     
     def __len__(self):
         return len(self.image_ids)
