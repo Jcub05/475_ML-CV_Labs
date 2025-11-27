@@ -151,15 +151,11 @@ def validate_epoch(
         logger: Logger
         
     Returns:
-        Dictionary with validation metrics including Recall@K
+        Dictionary with validation loss only (Recall@K computed separately)
     """
     model.eval()
     
     loss_meter = AverageMeter("Val_Loss")
-    
-    # Collect all embeddings for Recall@K computation
-    all_image_embeds = []
-    all_text_embeds = []
     
     pbar = tqdm(dataloader, desc="Validation")
     
@@ -180,39 +176,20 @@ def validate_epoch(
         
         loss_meter.update(metrics['loss'], batch_size)
         
-        # Store embeddings
-        all_image_embeds.append(image_embeds.cpu())
-        all_text_embeds.append(text_embeds.cpu())
-        
         pbar.set_postfix({'loss': f"{loss_meter.avg:.4f}"})
     
-    # Concatenate all embeddings
-    all_image_embeds = torch.cat(all_image_embeds, dim=0)
-    all_text_embeds = torch.cat(all_text_embeds, dim=0)
+    # Clear GPU cache to free memory
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     
-    # Compute Recall@K metrics
-    logger.log("Computing Recall@K metrics...")
-    recall_metrics = compute_retrieval_metrics(
-        all_image_embeds,
-        all_text_embeds,
-        k_values=config.recall_k_values
-    )
-    
-    # Combine all metrics
+    # Return only loss (Recall@K will be computed separately after training)
     val_metrics = {
-        'loss': loss_meter.avg,
-        **recall_metrics
+        'loss': loss_meter.avg
     }
     
     # Log metrics
     logger.log(f"Validation Loss: {val_metrics['loss']:.4f}")
-    logger.log("Retrieval Metrics:")
-    logger.log(f"  Image→Text: R@1={val_metrics['img2txt_r1']:.2f}% "
-               f"R@5={val_metrics['img2txt_r5']:.2f}% "
-               f"R@10={val_metrics['img2txt_r10']:.2f}%")
-    logger.log(f"  Text→Image: R@1={val_metrics['txt2img_r1']:.2f}% "
-               f"R@5={val_metrics['txt2img_r5']:.2f}% "
-               f"R@10={val_metrics['txt2img_r10']:.2f}%")
+    logger.log("(Recall@K will be computed after training completes)")
     
     return val_metrics
 
@@ -317,7 +294,7 @@ def train_model(config, args):
     # Training history
     train_losses = []
     val_losses = []
-    best_val_recall = 0.0
+    best_val_loss = float('inf')  # Track best validation loss
     
     # Training loop
     logger.log("\n" + "=" * 80)
@@ -345,13 +322,13 @@ def train_model(config, args):
             )
             val_losses.append(val_metrics['loss'])
             
-            # Check if best model
-            current_recall = val_metrics['avg_recall']
-            is_best = current_recall > best_val_recall
+            # Check if best model (lowest validation loss)
+            current_loss = val_metrics['loss']
+            is_best = current_loss < best_val_loss
             
             if is_best:
-                best_val_recall = current_recall
-                logger.log(f"✓ New best model! Avg Recall: {best_val_recall:.2f}%")
+                best_val_loss = current_loss
+                logger.log(f"✓ New best model! Val Loss: {best_val_loss:.4f}")
             
             # Save checkpoint
             if not config.save_best_only or is_best:
@@ -382,7 +359,8 @@ def train_model(config, args):
     logger.log("Training Complete!")
     logger.log("=" * 80)
     logger.log(f"Total training time: {format_time(total_time)}")
-    logger.log(f"Best validation recall: {best_val_recall:.2f}%")
+    logger.log(f"Best validation loss: {best_val_loss:.4f}")
+    logger.log("\nNote: Run evaluate.py to compute Recall@K metrics")
     
     # Plot training curves
     logger.log("\nGenerating plots...")
@@ -391,30 +369,7 @@ def train_model(config, args):
     plot_training_curves(train_losses, val_losses, plot_path)
     logger.log(f"Training curves saved: {plot_path}")
     
-    # Final validation with best model
-    logger.log("\nLoading best model for final evaluation...")
-    best_checkpoint = config.checkpoint_path / "best_model.pth"
-    if best_checkpoint.exists():
-        checkpoint = torch.load(best_checkpoint, map_location=device)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        
-        final_metrics = validate_epoch(
-            model, val_loader, criterion, device, config, logger
-        )
-        
-        # Plot final metrics
-        metrics_plot_path = config.results_path / "final_metrics.png"
-        plot_recall_metrics(final_metrics, metrics_plot_path)
-        logger.log(f"Metrics plot saved: {metrics_plot_path}")
-        
-        # Save final metrics
-        import json
-        metrics_file = config.results_path / "final_metrics.json"
-        with open(metrics_file, 'w') as f:
-            json.dump(final_metrics, f, indent=2)
-        logger.log(f"Metrics saved: {metrics_file}")
-    
-    logger.log("\nAll done!")
+    logger.log("\nAll done! Run evaluate.py to compute Recall@K metrics.")
 
 
 def parse_args():
