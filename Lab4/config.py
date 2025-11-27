@@ -49,8 +49,8 @@ class Config:
     # ========== Training Hyperparameters ==========
     batch_size: int = 64
     num_epochs: int = 15
-    learning_rate: float = 1e-4
-    weight_decay: float = 1e-4
+    learning_rate: float = 5e-5  # Reduced from 1e-4 to prevent overfitting
+    weight_decay: float = 0.05   # Increased from 1e-4 for better regularization
     temperature: float = 0.07
     
     # Learning rate scheduler

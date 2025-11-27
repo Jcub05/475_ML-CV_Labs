@@ -1,6 +1,7 @@
 """
 Simplified COCO dataset loader for Kaggle that uses cached text embeddings.
 Compatible with embeddings cached by cache_text_embeddings.py
+Uses ALL 5 captions per image for 5x more training data.
 """
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -22,40 +23,47 @@ class COCOCachedDataset(Dataset):
         embeddings_cache = torch.load(embeddings_file)
         
         # embeddings_cache is a dict: {"image_id_caption_idx": tensor, ...}
-        # We need to extract unique image_ids and their embeddings
+        # We use ALL captions per image (not just first) for more training data
         
-        # Group embeddings by image_id (take first caption for each image)
-        image_embeddings = {}
+        # Store all embeddings with their image_id and caption index
+        all_embeddings = []
+        all_image_ids = []
+        all_caption_indices = []
+        
         for key, embedding in embeddings_cache.items():
             # Key format: "image_id_caption_idx" (e.g., "391895_0")
             image_id_str, caption_idx = key.rsplit('_', 1)
             image_id = int(image_id_str)
             
-            # Take only the first caption (caption_idx == 0) for each image
-            if caption_idx == '0':
-                image_embeddings[image_id] = embedding
+            # Use ALL captions (not just caption_idx == 0)
+            all_embeddings.append(embedding)
+            all_image_ids.append(image_id)
+            all_caption_indices.append(int(caption_idx))
         
         # Build image paths and filter out missing images
         split_name = 'train' if 'train' in str(images_dir) else 'val'
         valid_image_ids = []
         valid_embeddings = []
         valid_paths = []
+        valid_caption_indices = []
         missing_count = 0
         
-        for img_id in sorted(image_embeddings.keys()):
+        for i, (img_id, caption_idx) in enumerate(zip(all_image_ids, all_caption_indices)):
             img_path = self.images_dir / f"COCO_{split_name}2014_{img_id:012d}.jpg"
             
             # Only include if image file exists
             if img_path.exists():
                 valid_image_ids.append(img_id)
-                valid_embeddings.append(image_embeddings[img_id])
+                valid_embeddings.append(all_embeddings[i])
                 valid_paths.append(img_path)
+                valid_caption_indices.append(caption_idx)
             else:
                 missing_count += 1
         
         self.image_ids = valid_image_ids
         self.embeddings = torch.stack(valid_embeddings) if valid_embeddings else torch.empty(0)
         self.image_paths = valid_paths
+        self.caption_indices = valid_caption_indices
         
         print(f"✓ Loaded {len(self)} samples with embeddings")
         if missing_count > 0:
