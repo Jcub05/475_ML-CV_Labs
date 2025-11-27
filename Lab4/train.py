@@ -1,5 +1,6 @@
 """
 Training script for CLIP fine-tuning on COCO 2014 dataset.
+Version: 2.0 - Memory optimized (no Recall@K in validation)
 """
 
 import os
