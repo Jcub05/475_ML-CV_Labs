@@ -138,6 +138,17 @@ def create_dataloaders(config=None, data_root=None, train_images_dir=None,
         transform=transform
     )
     
+    # Apply subset if requested
+    use_subset = kwargs.get('use_subset', False) or (config and getattr(config, 'use_subset', False))
+    subset_size = kwargs.get('subset_size', 10000) or (config and getattr(config, 'subset_size', 10000))
+    
+    if use_subset:
+        print(f"Subsetting validation set to {subset_size} samples...")
+        if len(val_dataset) > subset_size:
+            indices = torch.randperm(len(val_dataset))[:subset_size]
+            val_dataset = torch.utils.data.Subset(val_dataset, indices)
+            print(f"✓ Validation subset created: {len(val_dataset)} samples")
+    
     # Create dataloaders
     train_loader = DataLoader(
         train_dataset,
