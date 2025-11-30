@@ -9,15 +9,11 @@ data/
 VOC2012/
 VOC2012_train_val/
 
-# Model checkpoints (too large, will be generated)
-checkpoints/
+# Model weights (too large for git - exceeds 100MB limit)
 *.pth
 *.pt
-
-# Results and outputs (will be generated)
-results/
-visualizations/
-visualization_*/
+*.ckpt
+*.weights
 
 # System files
 .DS_Store
