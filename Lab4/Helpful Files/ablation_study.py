@@ -11,8 +11,7 @@ from transformers import CLIPTokenizer, CLIPTextModel
 
 from config import Config
 from dataset import create_dataloaders
-from model import create_clip_model
-from model_modified import create_modified_model, MODEL_CONFIGS
+from model import create_clip_model, create_modified_model, MODEL_CONFIGS
 from metrics import compute_retrieval_metrics
 from utils import Logger, load_checkpoint
 
