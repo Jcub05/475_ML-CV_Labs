@@ -1,9 +1,5 @@
-# CLIP Fine-tuning Evaluation Commands
+# Commands to start the evaluation process for CLIP models
 # Lab 4 - ELEC 475
-
-# ============================================================================
-# EVALUATION - Recall@K Metrics
-# ============================================================================
 
 # Evaluate baseline model:
 python evaluate.py --checkpoint Results/base_model/best_model_base.pth
@@ -13,79 +9,3 @@ python evaluate.py --checkpoint Results/batch_norm_abalation/best_model_batch_no
 
 # Evaluate Dropout model:
 python evaluate.py --checkpoint Results/dropout_abalation/best_model_dropout.pth
-
-# Custom checkpoint path:
-python evaluate.py --checkpoint path/to/model.pth
-
-# ============================================================================
-# VISUALIZATION - Qualitative Results
-# ============================================================================
-
-# Generate all required visualizations for report:
-python generate_required_visualizations.py
-
-# This generates:
-# - Text-to-Image retrieval for query "sport"
-# - Zero-shot classification examples
-# For all three model variants (base, batchnorm, dropout)
-
-# Generate custom visualizations:
-python generate_visualizations.py
-
-# Visualize with specific model:
-python visualize.py --checkpoint Results/base_model/best_model_base.pth
-
-# Text-to-image retrieval with custom queries:
-python visualize.py --mode text_to_image --queries "a cat" "a car" "people eating"
-
-# Zero-shot image classification:
-python visualize.py --mode zero_shot --image_path path/to/image.jpg --labels "cat" "dog" "bird"
-
-# ============================================================================
-# EVALUATION METRICS EXPLAINED
-# ============================================================================
-
-# The evaluation script reports:
-
-# Image-to-Text Retrieval:
-# - Recall@1: % of images where correct caption is top-1 result
-# - Recall@5: % of images where correct caption is in top-5 results
-# - Recall@10: % of images where correct caption is in top-10 results
-
-# Text-to-Image Retrieval:
-# - Recall@1: % of captions where correct image is top-1 result
-# - Recall@5: % of captions where correct image is in top-5 results
-# - Recall@10: % of captions where correct image is in top-10 results
-
-# ============================================================================
-# OUTPUT FILES
-# ============================================================================
-
-# Evaluation generates:
-# - Results/<model_variant>/evaluation_log.txt: Detailed evaluation log
-# - Results/<model_variant>/recall_metrics.json: Metrics in JSON format
-# - Results/<model_variant>/recall_metrics.png: Metrics visualization
-# - Evaluation/best_model_<variant>_metrics.json: Final metrics
-
-# Visualization generates:
-# - Visualizations/<model_variant>/text2img_<query>.png: Retrieval results
-# - Visualizations/<model_variant>/zero_shot_<class>.png: Classification results
-
-# ============================================================================
-# BATCH EVALUATION OF ALL MODELS
-# ============================================================================
-
-# Evaluate all three ablation models sequentially:
-python evaluate.py --checkpoint Results/base_model/best_model_base.pth
-python evaluate.py --checkpoint Results/batch_norm_abalation/best_model_batch_norm.pth
-python evaluate.py --checkpoint Results/dropout_abalation/best_model_dropout.pth
-
-# ============================================================================
-# NOTES
-# ============================================================================
-
-# - Evaluation takes ~5-10 minutes on validation set
-# - Requires the same dataset structure as training
-# - Results are saved to Results/ and Evaluation/ directories
-# - Visualizations are saved to Visualizations/ directory
-# - All generated files should be included in lab submission

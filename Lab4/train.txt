@@ -1,100 +1,11 @@
-# CLIP Fine-tuning Training Commands
+# Commands to start the training process for CLIP fine-tuning on COCO 2014
 # Lab 4 - ELEC 475
 
-# ============================================================================
-# PREREQUISITES
-# ============================================================================
-
-# 1. Install required dependencies:
-pip install -r requirements.txt
-
-# 2. Ensure dataset is available:
-#    - COCO 2014 dataset should be in datasets_Lab4/coco_2014/
-#    - Directory structure:
-#      datasets_Lab4/coco_2014/
-#        ├── train2014/
-#        ├── val2014/
-#        └── annotations/
-#           ├── captions_train2014.json
-#           └── captions_val2014.json
-
-# 3. Cache text embeddings (RECOMMENDED - run once before training):
-python cache_text_embeddings.py
-
-# ============================================================================
-# BASIC TRAINING
-# ============================================================================
-
-# Train baseline model (default settings):
+# Train baseline model:
 python train.py
 
-# Train with custom hyperparameters:
-python train.py --batch_size 64 --epochs 15 --learning_rate 5e-5
+# Train BatchNorm model:
+python train.py --batch_size 64 --num_epochs 15
 
-# ============================================================================
-# MODIFIED MODEL TRAINING (for Ablation Study)
-# ============================================================================
-
-# Train model with BatchNorm modification:
-python train.py --model modified --modification batchnorm --save_dir Results/batch_norm_abalation
-
-# Train model with Dropout modification:
-python train.py --model modified --modification dropout --save_dir Results/dropout_abalation
-
-# Train baseline for ablation comparison:
-python train.py --save_dir Results/base_model
-
-# ============================================================================
-# ABLATION STUDY (Automated)
-# ============================================================================
-
-# Run complete ablation study (trains all configurations):
-python ablation_study.py
-
-# Available configurations:
-# - baseline: Standard ResNet50 + 2-layer projection
-# - batchnorm: Adds BatchNorm to projection head
-# - dropout: Adds Dropout (0.1) to projection head
-
-# ============================================================================
-# TRAINING MONITORING
-# ============================================================================
-
-# Training automatically displays:
-# - Progress bars with current epoch, batch, loss, and ETA
-# - Validation loss after each epoch
-# - Best model checkpoints saved based on validation loss
-
-# Logs and checkpoints saved to:
-# - Results/<save_dir>/training_log.txt
-# - Results/<save_dir>/best_model_<variant>.pth
-# - Results/<save_dir>/training_curves.png
-
-# ============================================================================
-# COMMON OPTIONS
-# ============================================================================
-
-# --batch_size: Training batch size (default: 64)
-#   - 32: Lower memory usage (~8GB GPU)
-#   - 64: Balanced (default, ~12GB GPU)
-#   - 128: Faster training (~20GB GPU)
-
-# --epochs: Number of training epochs (default: 15)
-
-# --learning_rate: Learning rate (default: 5e-5)
-
-# --save_dir: Directory to save results (default: Results/baseline)
-
-# --use_subset: Use a subset of data for quick testing
-
-# --subset_size: Size of subset when using --use_subset (default: 1000)
-
-# ============================================================================
-# NOTES
-# ============================================================================
-
-# - Training takes ~2-4 hours per epoch on modern GPU (RTX 3080/A100)
-# - Batch size 64 requires ~12GB GPU memory
-# - Text embedding caching speeds up training significantly
-# - Best model is saved automatically based on lowest validation loss
-# - Training curves are generated and saved after training completes
+# Train Dropout model:
+python train.py --batch_size 64 --num_epochs 15
