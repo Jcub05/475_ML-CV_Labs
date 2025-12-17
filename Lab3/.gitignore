@@ -9,6 +9,10 @@ data/
 VOC2012/
 VOC2012_train_val/
 
+# Lab instructions and experimental code
+Instructions/
+Improvements/
+
 # Model checkpoints - allow small ones for submission
 # checkpoints/
 # *.pth  (commented out - we need these for submission!)
